@@ -1,0 +1,140 @@
+/*
+  VIDUDHI — Minimal Light Leafy Green Theme (#7CFC00)
+  Clean, neat ("neta"), distraction-free interface with natural leafy green accents,
+  crisp white/sage surfaces, and modern forest-slate chrome navigation.
+*/
+
+:root {
+  --bg: #FFFFFF;
+  --bg-alt: #F6F9F5;
+  --surface: #FFFFFF;
+  --surface-2: #EEF4ED;
+  --ink: #192219;
+  --ink-soft: #3D4F3F;
+  --ink-faint: #5E7260;
+  --line: rgba(25, 34, 25, 0.08);
+  --line-strong: rgba(25, 34, 25, 0.16);
+
+  /* Sidebar / dark chrome — minimal deep forest slate (no vomit purple) */
+  --chrome-bg: #132216;
+  --chrome-bg-alt: #1A2E1F;
+  --chrome-ink: #F2F8F1;
+  --chrome-ink-soft: #A3BAA6;
+  --chrome-line: rgba(255, 255, 255, 0.08);
+
+  /* Default accent = Minimal Light Leafy Green (#7CFC00) */
+  --accent: #7CFC00;
+  --accent-border: #63C800;
+  --accent-ink: #0B2504;
+  --accent-soft: #ECFDE7;
+
+  --teal: #059669;
+  --teal-border: #047857;
+  --teal-ink: #064E3B;
+  --teal-soft: #E6F8F2;
+
+  --berry: #DC2626;
+  --berry-border: #B91C1C;
+  --berry-ink: #7F1D1D;
+  --berry-soft: #FEE2E2;
+
+  --blue: #0284C7;
+  --blue-border: #0369A1;
+  --blue-ink: #0C4A6E;
+  --blue-soft: #E0F2FE;
+
+  --navy: #1E3A8A;
+  --navy-soft: #DBEAFE;
+
+  /* Emergency SOS alert colors - minimal and clean */
+  --sos-red: #DC2626;
+  --sos-red-hover: #B91C1C;
+  --sos-red-soft: #FEF2F2;
+  --sos-red-ink: #991B1B;
+
+  --shadow-tag: 0 1px 2px rgba(19, 34, 22, 0.05), 0 4px 12px -2px rgba(19, 34, 22, 0.08);
+  --shadow-lift: 0 12px 28px -10px rgba(19, 34, 22, 0.16);
+  --shadow-sticker: 0 2px 0 rgba(19, 34, 22, 0.08);
+
+  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+  --radius-tag: 12px;
+  --radius-sm: 8px;
+
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #0F1610;
+  --bg-alt: #141E15;
+  --surface: #172319;
+  --surface-2: #1E2D20;
+  --ink: #EFF6EE;
+  --ink-soft: #A9BCA8;
+  --ink-faint: #6F846E;
+  --line: rgba(239, 246, 238, 0.08);
+  --line-strong: rgba(239, 246, 238, 0.16);
+
+  --chrome-bg: #0C120D;
+  --chrome-bg-alt: #111A13;
+  --chrome-ink: #EFF6EE;
+  --chrome-ink-soft: #A9BCA8;
+  --chrome-line: rgba(239, 246, 238, 0.08);
+
+  --accent: #7CFC00;
+  --accent-border: #63C800;
+  --accent-ink: #0B2504;
+  --accent-soft: #1B3512;
+
+  --teal: #34D399;
+  --teal-border: #10B981;
+  --teal-ink: #A7F3D0;
+  --teal-soft: #123829;
+
+  --berry: #F87171;
+  --berry-border: #EF4444;
+  --berry-ink: #FECACA;
+  --berry-soft: #381B1B;
+
+  --blue: #38BDF8;
+  --blue-border: #0EA5E9;
+  --blue-ink: #BAE6FD;
+  --blue-soft: #153147;
+
+  --navy: #93C5FD;
+  --navy-soft: #1E293B;
+
+  --sos-red: #F87171;
+  --sos-red-hover: #EF4444;
+  --sos-red-soft: #381B1B;
+  --sos-red-ink: #FECACA;
+
+  --shadow-tag: 0 1px 0 rgba(0,0,0,0.3), 0 8px 18px -8px rgba(0,0,0,0.6);
+  --shadow-lift: 0 16px 36px -16px rgba(0,0,0,0.7);
+  --shadow-sticker: 0 2px 0 rgba(0,0,0,0.3);
+
+  color-scheme: dark;
+}
+
+/* ------------------------------------------------------------------ */
+/* Accent Color Variations — Crisp, Natural, Minimal                   */
+/* ------------------------------------------------------------------ */
+.accent-leaf { --accent: #7CFC00; --accent-border: #63C800; --accent-ink: #0B2504; --accent-soft: #ECFDE7; }
+.accent-emerald { --accent: #10B981; --accent-border: #059669; --accent-ink: #FFFFFF; --accent-soft: #E6F8F2; }
+.accent-forest { --accent: #2E7D32; --accent-border: #1B5E20; --accent-ink: #FFFFFF; --accent-soft: #E8F5E9; }
+.accent-mint { --accent: #34D399; --accent-border: #10B981; --accent-ink: #064E3B; --accent-soft: #E8FCF4; }
+.accent-slate { --accent: #334155; --accent-border: #1E293B; --accent-ink: #FFFFFF; --accent-soft: #F1F5F9; }
+.accent-sky { --accent: #0EA5E9; --accent-border: #0284C7; --accent-ink: #FFFFFF; --accent-soft: #E0F2FE; }
+.accent-amber { --accent: #F59E0B; --accent-border: #D97706; --accent-ink: #FFFFFF; --accent-soft: #FEF3C7; }
+.accent-teal { --accent: #14B8A6; --accent-border: #0D9488; --accent-ink: #FFFFFF; --accent-soft: #CCFBF1; }
+
+/* Graceful fallbacks for legacy stored pink/violet selections */
+.accent-pink { --accent: #7CFC00; --accent-border: #63C800; --accent-ink: #0B2504; --accent-soft: #ECFDE7; }
+.accent-violet { --accent: #10B981; --accent-border: #059669; --accent-ink: #FFFFFF; --accent-soft: #E6F8F2; }
+.accent-coral { --accent: #10B981; --accent-border: #059669; --accent-ink: #FFFFFF; --accent-soft: #E6F8F2; }
+.accent-lime { --accent: #7CFC00; --accent-border: #63C800; --accent-ink: #0B2504; --accent-soft: #ECFDE7; }
+.accent-turquoise { --accent: #14B8A6; --accent-border: #0D9488; --accent-ink: #FFFFFF; --accent-soft: #CCFBF1; }
+.accent-sunshine { --accent: #F59E0B; --accent-border: #D97706; --accent-ink: #FFFFFF; --accent-soft: #FEF3C7; }
+.accent-gold { --accent: #F59E0B; --accent-border: #D97706; --accent-ink: #FFFFFF; --accent-soft: #FEF3C7; }
