@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { KeyRound, ShieldCheck, DoorOpen, ArrowRight, Phone, ShieldAlert, CheckCircle2 } from 'lucide-react'
+import { ShieldCheck, DoorOpen, ArrowRight, Phone, ShieldAlert, UserCog, Sparkles } from 'lucide-react'
 import { login } from '../store/slices/authSlice'
 import { selectUi, pushToast } from '../store/slices/uiSlice'
 import useTranslation from '../hooks/useTranslation'
@@ -12,14 +12,30 @@ export default function Login() {
   const navigate = useNavigate()
   const { buttonSkin, fontTheme, accentColor } = useSelector(selectUi)
   const { t } = useTranslation()
-  const [role, setRole] = useState('resident')
-  const [id, setId] = useState('')
-  const [password, setPassword] = useState('')
+  const [role, setRole] = useState('student')
+  const [id, setId] = useState('24104031')
+  const [password, setPassword] = useState('password123')
+
+  const handleRoleSelect = (newRole) => {
+    setRole(newRole)
+    if (newRole === 'student') {
+      setId('24104031')
+    } else if (newRole === 'warden') {
+      setId('WRD-1001')
+    } else if (newRole === 'admin') {
+      setId('ADM-0001')
+    }
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
     dispatch(login(role))
-    dispatch(pushToast(role === 'admin' ? 'Welcome back, Warden.' : 'Welcome back!', 'ok'))
+    const roleTitles = {
+      student: 'Welcome back, Keerthana!',
+      warden: 'Welcome to Warden Command Center, Dr. Sundaram.',
+      admin: 'Welcome to Administrative Console, Prof. Venkatesh.',
+    }
+    dispatch(pushToast(roleTitles[role] || 'Welcome back!', 'ok'))
     navigate('/app')
   }
 
@@ -28,46 +44,74 @@ export default function Login() {
       <div className="login-backdrop-overlay" />
 
       <div className="login-content-box">
-        {/* Hostel Branding directly on top of the login portion */}
+        {/* Hostel Branding with small refined crest logo */}
         <div className="login-brand-header">
-          <div className="login-brand-logo">
-            <KeyRound size={28} strokeWidth={2.2} />
+          <div
+            className="login-brand-logo"
+            aria-hidden="true"
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: 12,
+              overflow: 'hidden',
+              padding: 0,
+              border: '2px solid var(--accent-border, #7CFC00)',
+              boxShadow: '0 4px 16px rgba(124, 252, 0, 0.25)',
+              margin: '0 auto 12px',
+            }}
+          >
+            <img
+              src="/brand-logo.jpg"
+              alt="Vidudhi Logo"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            />
           </div>
-          <h1 className="login-brand-title">Vidhuthi</h1>
-          <p className="login-brand-subtitle">Student Residence &amp; Campus Living Portal</p>
+          <h1 className="login-brand-title">Vidudhi</h1>
+          <p className="login-brand-subtitle">
+            Smart Residence &amp; Campus Living Platform
+          </p>
         </div>
 
         {/* Centered Login Card */}
         <div className="login-card">
           <div className="login-card-header">
-            <span className="login-card-eyebrow">PORTAL ACCESS</span>
             <h2>Sign in to your account</h2>
-            <p className="login-card-desc">Select your role to access your room and campus facilities</p>
           </div>
 
           <form className="login-form" onSubmit={handleSubmit}>
-            <div className="role-toggle">
+            {/* 3 Strict Roles Selector */}
+            <div className="role-toggle role-toggle-three">
               <button
                 type="button"
-                className={role === 'resident' ? 'is-active' : ''}
-                onClick={() => setRole('resident')}
+                className={role === 'student' ? 'is-active' : ''}
+                onClick={() => handleRoleSelect('student')}
               >
-                <DoorOpen size={16} /> Resident
+                <DoorOpen size={15} /> Student
+              </button>
+              <button
+                type="button"
+                className={role === 'warden' ? 'is-active' : ''}
+                onClick={() => handleRoleSelect('warden')}
+              >
+                <ShieldCheck size={15} /> Warden
               </button>
               <button
                 type="button"
                 className={role === 'admin' ? 'is-active' : ''}
-                onClick={() => setRole('admin')}
+                onClick={() => handleRoleSelect('admin')}
               >
-                <ShieldCheck size={16} /> Warden
+                <UserCog size={15} /> Admin
               </button>
             </div>
 
             <div className="form-field">
-              <label>{role === 'admin' ? 'Staff ID' : 'Roll Number / Register No.'}</label>
+              <label>
+                {role === 'student' ? 'Student Roll Number' : role === 'warden' ? 'Warden Staff ID' : 'Administrator ID'}
+              </label>
               <input
                 type="text"
-                placeholder={role === 'admin' ? 'e.g. STF-0042' : 'e.g. 24104031'}
+                required
+                placeholder={role === 'student' ? '24104031' : role === 'warden' ? 'WRD-1001' : 'ADM-0001'}
                 value={id}
                 onChange={(e) => setId(e.target.value)}
               />
@@ -77,6 +121,7 @@ export default function Login() {
               <label>Password</label>
               <input
                 type="password"
+                required
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -84,22 +129,17 @@ export default function Login() {
             </div>
 
             <button type="submit" className="btn btn-primary login-submit">
-              <span>Continue as {role === 'admin' ? 'Warden' : 'Resident'}</span>
+              <span>Sign In to Portal</span>
               <ArrowRight size={15} />
             </button>
-
-            <div className="login-demo-hint">
-              <CheckCircle2 size={13} color="var(--accent-border)" />
-              <span>Demo login enabled — tap continue with any credentials</span>
-            </div>
           </form>
         </div>
 
-        {/* Bottom emergency & contact strip */}
+        {/* Bottom emergency & contact strip without any 24/7 wording */}
         <div className="login-page-footer">
           <span><Phone size={12} /> Campus Control Desk: +91 94440 01100</span>
           <span className="login-footer-dot">·</span>
-          <span><ShieldAlert size={12} /> 24/7 Security &amp; Medical SOS Active</span>
+          <span><ShieldAlert size={12} /> Security &amp; Medical Emergency Network Active</span>
         </div>
       </div>
     </div>

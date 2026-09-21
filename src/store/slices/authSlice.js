@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { currentUser, adminUser } from '../../data/seedData'
+import { studentUser, wardenUser, adminUser } from '../../data/seedData'
 
 function readStoredUser(key, fallback) {
   try {
@@ -10,11 +10,23 @@ function readStoredUser(key, fallback) {
   }
 }
 
+function readStoredRole() {
+  try {
+    const raw = window.localStorage.getItem('vidudhi:auth_role')
+    if (raw === 'resident') return 'student'
+    return raw || 'student'
+  } catch {
+    return 'student'
+  }
+}
+
 const initialState = {
   isLoggedIn: false,
-  role: 'resident', // 'resident' | 'admin'
+  role: readStoredRole(), // 'student' | 'warden' | 'admin'
   profiles: {
-    resident: readStoredUser('vidudhi:profile_resident', currentUser),
+    student: readStoredUser('vidudhi:profile_student', studentUser),
+    resident: readStoredUser('vidudhi:profile_student', studentUser),
+    warden: readStoredUser('vidudhi:profile_warden', wardenUser),
     admin: readStoredUser('vidudhi:profile_admin', adminUser),
   },
 }
@@ -24,16 +36,25 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     login: (state, action) => {
-      state.role = action.payload
+      const normalizedRole = action.payload === 'resident' ? 'student' : action.payload
+      state.role = normalizedRole
       state.isLoggedIn = true
+      try {
+        window.localStorage.setItem('vidudhi:auth_role', normalizedRole)
+      } catch {
+        /* no-op */
+      }
     },
     logout: (state) => {
       state.isLoggedIn = false
     },
     updateUserProfile: (state, action) => {
       const { role, updates } = action.payload
-      const targetRole = role || state.role
+      const targetRole = (role || state.role) === 'resident' ? 'student' : (role || state.role)
       state.profiles[targetRole] = { ...state.profiles[targetRole], ...updates }
+      if (targetRole === 'student') {
+        state.profiles.resident = state.profiles.student
+      }
       try {
         window.localStorage.setItem(`vidudhi:profile_${targetRole}`, JSON.stringify(state.profiles[targetRole]))
       } catch {
@@ -45,7 +66,13 @@ const authSlice = createSlice({
 
 export const { login, logout, updateUserProfile } = authSlice.actions
 
-export const selectUser = (state) => state.auth.profiles[state.auth.role] || (state.auth.role === 'admin' ? adminUser : currentUser)
+export const selectUser = (state) => {
+  const r = state.auth.role === 'resident' ? 'student' : state.auth.role
+  if (r === 'warden') return state.auth.profiles.warden || wardenUser
+  if (r === 'admin') return state.auth.profiles.admin || adminUser
+  return state.auth.profiles.student || studentUser
+}
+
 export const selectAuth = (state) => state.auth
 
 export default authSlice.reducer

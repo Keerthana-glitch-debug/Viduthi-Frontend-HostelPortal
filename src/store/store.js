@@ -10,6 +10,11 @@ import profileReducer from './slices/profileSlice'
 import laundryReducer from './slices/laundrySlice'
 import messReducer from './slices/messSlice'
 import billsReducer from './slices/billsSlice'
+import facilitiesReducer from './slices/facilitiesSlice'
+import lostFoundReducer from './slices/lostFoundSlice'
+import sosReducer from './slices/sosSlice'
+import usersReducer from './slices/usersSlice'
+import attendanceReducer from './slices/attendanceSlice'
 
 export const store = configureStore({
   reducer: {
@@ -24,5 +29,10 @@ export const store = configureStore({
     laundry: laundryReducer,
     mess: messReducer,
     bills: billsReducer,
+    facilities: facilitiesReducer,
+    lostFound: lostFoundReducer,
+    sos: sosReducer,
+    users: usersReducer,
+    attendance: attendanceReducer,
   },
 })

@@ -19,7 +19,7 @@
 .login-backdrop-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(8, 16, 11, 0.72) 0%, rgba(13, 24, 16, 0.85) 100%);
+  background: linear-gradient(180deg, rgba(8, 16, 11, 0.76) 0%, rgba(13, 24, 16, 0.88) 100%);
   backdrop-filter: blur(2.5px);
   z-index: 1;
 }
@@ -29,7 +29,7 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 430px;
+  max-width: 440px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -46,22 +46,21 @@
 }
 
 .login-brand-logo {
-  width: 58px;
-  height: 58px;
-  border-radius: 16px;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
   background: rgba(124, 252, 0, 0.16);
   border: 1.5px solid rgba(124, 252, 0, 0.42);
-  color: #7CFC00;
   display: grid;
   place-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
 }
 
 .login-brand-title {
   font-family: var(--font-display);
-  font-size: 38px;
-  font-weight: 700;
+  font-size: 34px;
+  font-weight: 800;
   color: #FFFFFF;
   letter-spacing: -0.02em;
   line-height: 1.1;
@@ -70,10 +69,11 @@
 
 .login-brand-subtitle {
   font-size: 13.5px;
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(255, 255, 255, 0.85);
   margin-top: 6px;
   letter-spacing: 0.01em;
-  font-weight: 400;
+  font-weight: 500;
+  text-align: center;
 }
 
 /* The Centered Elevated Login Card */
@@ -88,16 +88,7 @@
 
 .login-card-header {
   margin-bottom: 18px;
-}
-
-.login-card-eyebrow {
-  display: inline-block;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--accent-border);
-  text-transform: uppercase;
-  margin-bottom: 4px;
+  text-align: center;
 }
 
 .login-card-header h2 {
@@ -105,14 +96,7 @@
   font-size: 20px;
   font-weight: 700;
   color: var(--ink);
-  margin: 0 0 4px;
-}
-
-.login-card-desc {
-  font-size: 12.5px;
-  color: var(--ink-soft);
   margin: 0;
-  line-height: 1.4;
 }
 
 /* Form Styles */
@@ -131,18 +115,18 @@
   gap: 4px;
 }
 
-.role-toggle button {
+.role-toggle-three button {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 10px;
+  gap: 5px;
+  padding: 8px 6px;
   border-radius: 7px;
   border: none;
   background: transparent;
   color: var(--ink-soft);
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -191,24 +175,13 @@
   width: 100%;
   justify-content: center;
   padding: 11px 16px;
-  font-size: 13.5px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 4px;
+  margin-top: 6px;
   cursor: pointer;
-}
-
-.login-demo-hint {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  font-size: 11px;
-  color: var(--ink-faint);
-  text-align: center;
-  margin-top: 2px;
 }
 
 /* Page Footer Strip */

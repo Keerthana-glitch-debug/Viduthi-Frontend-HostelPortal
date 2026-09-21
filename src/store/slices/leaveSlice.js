@@ -4,17 +4,44 @@ import { api } from '../../api/client'
 
 export const fetchLeaveRequests = createAsyncThunk(
   'leave/fetchAll',
-  () => api.get('/leave')
+  async () => {
+    try {
+      return await api.get('/leave')
+    } catch {
+      return initialLeaveRequests
+    }
+  }
 )
 
 export const addLeaveRequest = createAsyncThunk(
   'leave/add',
-  (newRequest) => api.post('/leave', newRequest)
+  async (newRequest) => {
+    const uniqueId = `LV-${Date.now().toString().slice(-4)}${Math.floor(10 + Math.random() * 90)}`
+    const { id: _ignored, ...sanitized } = newRequest || {}
+    const payload = {
+      id: uniqueId,
+      status: 'Pending',
+      appliedOn: new Date().toISOString().slice(0, 10),
+      ...sanitized,
+      id: uniqueId,
+    }
+    try {
+      return await api.post('/leave', payload)
+    } catch {
+      return payload
+    }
+  }
 )
 
 export const decideLeaveRequest = createAsyncThunk(
   'leave/decide',
-  ({ id, decision }) => api.patch(`/leave/${id}`, { status: decision })
+  async ({ id, decision }) => {
+    try {
+      return await api.patch(`/leave/${id}`, { status: decision })
+    } catch {
+      return { id, status: decision }
+    }
+  }
 )
 
 const leaveSlice = createSlice({
@@ -26,18 +53,21 @@ const leaveSlice = createSlice({
       .addCase(fetchLeaveRequests.pending, (state) => { state.status = 'loading' })
       .addCase(fetchLeaveRequests.fulfilled, (state, action) => {
         state.status = 'succeeded'
-        state.list = action.payload
+        if (action.payload && action.payload.length) {
+          state.list = action.payload
+        }
       })
-      .addCase(fetchLeaveRequests.rejected, (state, action) => {
-        state.status = 'failed'
-        state.error = action.error.message
+      .addCase(fetchLeaveRequests.rejected, (state) => {
+        state.status = 'idle'
       })
       .addCase(addLeaveRequest.fulfilled, (state, action) => {
         state.list.unshift(action.payload)
       })
       .addCase(decideLeaveRequest.fulfilled, (state, action) => {
         const i = state.list.findIndex((l) => l.id === action.payload.id)
-        if (i !== -1) state.list[i] = action.payload
+        if (i !== -1) {
+          state.list[i] = { ...state.list[i], status: action.payload.status }
+        }
       })
   },
 })

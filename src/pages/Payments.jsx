@@ -12,7 +12,7 @@ import { selectMyRoom } from '../store/slices/roomsSlice'
 import { selectBills, payBill, payCategoryBills } from '../store/slices/billsSlice'
 import { pushToast } from '../store/slices/uiSlice'
 
-const TYPE_ICON = { 'Hostel Fee': Landmark, 'Mess Bill': UtensilsCrossed, Laundry: Wallet }
+const TYPE_ICON = { 'Hostel Fee': Landmark, 'Mess Bill': UtensilsCrossed }
 const METHODS = [
   { id: 'upi', label: 'UPI / Dynamic QR Code', desc: 'Google Pay, PhonePe, Paytm, BHIM', icon: Smartphone },
   { id: 'card', label: 'Debit / Credit Card', desc: 'Visa, MasterCard, RuPay', icon: CreditCard },
@@ -181,6 +181,12 @@ export default function Payments() {
             <span className="stat-delta">Verified receipts</span>
           </div>
         </div>
+      </div>
+
+      {/* ZERO LAUNDRY BILLING POLICY BANNER */}
+      <div style={{ background: 'var(--surface-2)', border: '1px solid var(--line)', borderRadius: 10, padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 10, fontSize: 12.5, color: 'var(--ink-soft)' }}>
+        <ShieldCheck size={18} color="var(--accent-border)" />
+        <span><strong>Policy Note:</strong> Laundry service charges are 100% covered under your Annual Hostel Establishment Fee. No individual per-wash bills are charged to residents.</span>
       </div>
 
       {/* CATEGORY FILTER TABS: ALL / HOSTEL FEES / MESS FEES */}

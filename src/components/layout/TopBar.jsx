@@ -8,7 +8,7 @@ import { selectComplaints } from '../../store/slices/complaintsSlice'
 import { selectLeaveRequests } from '../../store/slices/leaveSlice'
 import { selectAuth } from '../../store/slices/authSlice'
 import { selectPhotoForRole } from '../../store/slices/profileSlice'
-import EmergencySosModal from '../common/EmergencySosModal'
+import OfflineSosModal from '../common/OfflineSosModal'
 import useDebounce from '../../hooks/useDebounce'
 import useOnClickOutside from '../../hooks/useOnClickOutside'
 import useKeyPress from '../../hooks/useKeyPress'
@@ -65,19 +65,16 @@ export default function TopBar({ title, subtitle, user, unreadCount }) {
   )
 
   useInterval(() => setNow(new Date()), 1000)
-
   useOnClickOutside(searchWrapRef, () => setOpen(false))
-
-  useKeyPress('/', (e) => {
-    const tag = document.activeElement?.tagName
-    if (tag === 'INPUT' || tag === 'TEXTAREA') return
-    e.preventDefault()
-    inputRef.current?.focus()
-  })
-
   useKeyPress('Escape', () => setOpen(false))
 
   const clock = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+
+  const roleLabel = {
+    student: `Resident · Room ${user.roomNumber || 'A-101'}`,
+    warden: user.designation || 'Chief Warden',
+    admin: 'Administrator',
+  }[role] || 'Resident'
 
   return (
     <header className="topbar">
@@ -91,7 +88,7 @@ export default function TopBar({ title, subtitle, user, unreadCount }) {
         <input
           ref={inputRef}
           type="text"
-          placeholder="Search rooms, complaints, students… (press /)"
+          placeholder="Search rooms, complaints, services…"
           value={query}
           onChange={(e) => { setQuery(e.target.value); setOpen(true) }}
           onFocus={() => query && setOpen(true)}
@@ -99,10 +96,10 @@ export default function TopBar({ title, subtitle, user, unreadCount }) {
         {open && debouncedQuery && (
           <div className="search-drop">
             {results.length === 0 ? (
-              <div className="search-empty">No matches on the register.</div>
+              <div className="search-empty">No matches found.</div>
             ) : (
               results.map((r) => {
-                const Icon = KIND_ICON[r.kind]
+                const Icon = KIND_ICON[r.kind] || DoorOpen
                 return (
                   <button
                     key={`${r.kind}-${r.id}`}
@@ -125,7 +122,7 @@ export default function TopBar({ title, subtitle, user, unreadCount }) {
           type="button"
           className="btn btn-sos"
           onClick={() => setSosOpen(true)}
-          title="Emergency Assistance & SOS"
+          title="Emergency Assistance & SOS (Offline-Ready)"
         >
           <ShieldAlert size={14} strokeWidth={2.4} color="#FFFFFF" />
           <span>SOS</span>
@@ -144,11 +141,11 @@ export default function TopBar({ title, subtitle, user, unreadCount }) {
           </div>
           <div className="topbar-user-text">
             <span className="user-name">{user.name}</span>
-            <span className="user-role">{user.designation || (user.role === 'admin' ? 'Administrator' : `Room ${user.roomNumber}`)}</span>
+            <span className="user-role">{roleLabel}</span>
           </div>
         </button>
       </div>
-      <EmergencySosModal isOpen={sosOpen} onClose={() => setSosOpen(false)} />
+      <OfflineSosModal isOpen={sosOpen} onClose={() => setSosOpen(false)} />
     </header>
   )
 }

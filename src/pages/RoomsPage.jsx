@@ -36,7 +36,7 @@ export default function RoomsPage() {
 
   const selected = roomId ? rooms.find((r) => String(r.roomId) === roomId) : null
 
-  if (role !== 'admin') {
+  if (role === 'student') {
     return (
       <div className="page">
         <div className="page-header">

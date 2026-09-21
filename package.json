@@ -3,7 +3,7 @@
   "private": true,
   "version": "2.0.0",
   "type": "module",
-  "homepage": "https://YOUR-GITHUB-USERNAME.github.io/hostel-frontend",
+"homepage": "https://keerthana-glitch-debug.github.io/Viduthi-Frontend-HostelPortal",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

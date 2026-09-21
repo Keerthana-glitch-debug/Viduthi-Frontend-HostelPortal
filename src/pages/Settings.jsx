@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux'
-import { Moon, Sun, CheckCircle2, Palette, PanelLeftClose, Keyboard, Type, Globe, Check, Wand2, PawPrint, Circle } from 'lucide-react'
+import { Moon, Sun, CheckCircle2, Palette, PanelLeftClose, Keyboard, Type, Globe, Check, Wand2, PawPrint, Circle, ShieldCheck } from 'lucide-react'
 import { selectUi, toggleTheme, setButtonSkin, setFontTheme, setAccentColor, setBackgroundTheme, setLanguage, pushToast } from '../store/slices/uiSlice'
 import { LANGUAGES } from '../i18n/translations'
 import useTranslation from '../hooks/useTranslation'
@@ -200,16 +200,55 @@ export default function Settings() {
         <div className="panel">
           <div className="panel-head">
             <div>
-              <h3><Keyboard size={15} style={{ verticalAlign: -2, marginRight: 6 }} />{t('settings_shortcuts')}</h3>
-              <p>{t('settings_shortcuts_desc')}</p>
+              <h3><ShieldCheck size={15} style={{ verticalAlign: -2, marginRight: 6, color: 'var(--accent-green)' }} />Portal &amp; Data Preferences</h3>
+              <p>Device preferences, offline data cache, and campus session security</p>
             </div>
           </div>
-          <div className="shortcut-list">
-            <div className="shortcut-row"><kbd>⌘K</kbd><span>{t('shortcut_palette')}</span></div>
-            <div className="shortcut-row"><kbd>/</kbd><span>{t('shortcut_search')}</span></div>
-            <div className="shortcut-row"><kbd>Esc</kbd><span>{t('shortcut_esc')}</span></div>
-            <div className="shortcut-row"><PanelLeftClose size={14} /><span>{t('shortcut_sidebar')}</span></div>
-            <div className="shortcut-row"><CheckCircle2 size={14} /><span>{t('shortcut_toast')}</span></div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div className="settings-row">
+              <div>
+                <div className="settings-row-title">Offline SOS Local Cache</div>
+                <p className="settings-row-desc">Emergency beacon requests are safely backed up in device storage even when disconnected from campus Wi-Fi.</p>
+              </div>
+              <span className="badge badge-ok">Active &amp; Ready</span>
+            </div>
+
+            <div className="settings-row">
+              <div>
+                <div className="settings-row-title">Session Persistence</div>
+                <p className="settings-row-desc">Keeps your active role, theme preferences, and credentials secured across browser reloads.</p>
+              </div>
+              <span className="badge badge-info">Persistent</span>
+            </div>
+
+            <div className="settings-row">
+              <div>
+                <div className="settings-row-title">Data Hygiene &amp; Cache</div>
+                <p className="settings-row-desc">Reset temporary mock operational cache and reload default registry records.</p>
+              </div>
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={() => {
+                  try {
+                    localStorage.removeItem('vidudhi:offline_sos_queue')
+                  } catch (e) {
+                    console.error(e)
+                  }
+                  dispatch(pushToast('Local emergency cache refreshed.', 'ok'))
+                }}
+              >
+                Refresh Cache
+              </button>
+            </div>
+
+            <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: 14, borderRadius: 8, border: '1px solid var(--line-weak)', fontSize: '0.85rem' }}>
+              <div style={{ fontWeight: 600, color: 'var(--text-main)', marginBottom: 4 }}>System Architecture</div>
+              <div style={{ color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                Vidudhi Residential Portal · Release v2.4 (React 18 + Redux Toolkit)<br />
+                Campus Identity &amp; Facilities Subsystem
+              </div>
+            </div>
           </div>
         </div>
       </div>

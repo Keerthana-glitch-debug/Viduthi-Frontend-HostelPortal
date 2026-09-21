@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Star, UtensilsCrossed, Coffee, Soup, Clock, CheckCircle2, MessageSquare, ShieldCheck, Edit3, Cookie, Eye } from 'lucide-react'
+import {
+  Star, UtensilsCrossed, Coffee, Soup, Clock, CheckCircle2,
+  MessageSquare, ShieldCheck, Edit3, Cookie, Eye, ChevronLeft, ChevronRight,
+} from 'lucide-react'
 import Modal from '../components/common/Modal'
 import Badge from '../components/common/Badge'
 import { selectAuth, selectUser } from '../store/slices/authSlice'
@@ -21,6 +24,8 @@ const MEAL_INFO = {
   Snacks: { icon: Cookie, time: '04:30 PM – 05:45 PM', color: '#D97706' },
   Dinner: { icon: Soup, time: '07:30 PM – 09:30 PM', color: '#0284C7' },
 }
+
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 function StarRow({ value, onChange, size = 18 }) {
   return (
@@ -52,12 +57,12 @@ export default function Mess() {
   const avgRating = useSelector(selectAverageRating)
 
   const todayIndex = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1
-  const today = menu[todayIndex] || menu[0]
+  const todayDayName = DAYS[todayIndex] || 'Monday'
 
+  const [activeDay, setActiveDay] = useState(todayDayName)
   const [rating, setRating] = useState(0)
   const [hygieneRating, setHygieneRating] = useState(5)
   const [mealType, setMealType] = useState('Lunch')
-  const [selectedDay, setSelectedDay] = useState(today.day)
   const [comment, setComment] = useState('')
 
   // Warden editing menu state
@@ -68,8 +73,22 @@ export default function Mess() {
   const [inspectingFeedback, setInspectingFeedback] = useState(null)
   const [wardenNote, setWardenNote] = useState('')
 
-  const handleOpenEditMenu = (dayObj) => {
-    const target = dayObj || today
+  const activeDayMenu = menu.find((m) => m.day === activeDay) || menu[0]
+  const isToday = activeDay === todayDayName
+
+  const handlePrevDay = () => {
+    const currentIndex = DAYS.indexOf(activeDay)
+    const prevIndex = (currentIndex - 1 + DAYS.length) % DAYS.length
+    setActiveDay(DAYS[prevIndex])
+  }
+
+  const handleNextDay = () => {
+    const currentIndex = DAYS.indexOf(activeDay)
+    const nextIndex = (currentIndex + 1) % DAYS.length
+    setActiveDay(DAYS[nextIndex])
+  }
+
+  const handleOpenEditMenu = (target) => {
     setEditingDay(target.day)
     setMenuForm({
       day: target.day,
@@ -79,6 +98,7 @@ export default function Mess() {
       dinner: target.dinner || '',
       lunchSpecial: target.lunchSpecial || '',
       dietType: target.dietType || 'Pure Veg',
+      nutrition: target.nutrition || '',
     })
   }
 
@@ -99,13 +119,13 @@ export default function Mess() {
     }
     dispatch(
       addMessFeedback(
-        { mealType, day: selectedDay, rating, hygieneRating, comment, committeeReviewed: false },
+        { mealType, day: activeDay, rating, hygieneRating, comment, committeeReviewed: false },
         user.name,
-        room.roomNumber,
+        room?.roomNumber || user.roomNumber || 'A-101',
         user.rollNo || '24104031'
       )
     )
-    dispatch(pushToast('Meal feedback submitted. Thank you!', 'ok'))
+    dispatch(pushToast(`Feedback for ${activeDay} ${mealType} submitted. Thank you!`, 'ok'))
     setRating(0)
     setComment('')
   }
@@ -117,106 +137,171 @@ export default function Mess() {
     setWardenNote('')
   }
 
+  const dayFeedback = feedback.filter((f) => f.day === activeDay)
+
+  // Add-ons state and billing
+  const [addOns, setAddOns] = useState({
+    chickenCurry: { name: 'Chicken Curry', price: 80, count: 0, desc: 'Rich spiced homestyle gravy' },
+    boiledEgg: { name: 'Boiled Egg', price: 15, count: 0, desc: 'Farm fresh single protein egg' },
+    omelette: { name: 'Omelette', price: 30, count: 0, desc: 'Double egg onion & green chilli' },
+    eggPoriyal: { name: 'Egg Poriyal', price: 25, count: 0, desc: 'Spiced egg scramble with curry leaves' },
+  })
+
+  const updateAddOnCount = (key, delta) => {
+    setAddOns((prev) => ({
+      ...prev,
+      [key]: {
+        ...prev[key],
+        count: Math.max(0, prev[key].count + delta),
+      },
+    }))
+  }
+
+  const totalAddOnBill = Object.values(addOns).reduce((sum, item) => sum + item.count * item.price, 0)
+  const totalItemCount = Object.values(addOns).reduce((sum, item) => sum + item.count, 0)
+
+  const handleOrderAddOns = () => {
+    if (totalAddOnBill === 0) return
+    dispatch(pushToast(`Order confirmed! ₹${totalAddOnBill} for ${totalItemCount} add-on(s) added to your mess bill.`, 'ok'))
+    setAddOns((prev) => {
+      const reset = {}
+      for (const k in prev) {
+        reset[k] = { ...prev[k], count: 0 }
+      }
+      return reset
+    })
+  }
+
   return (
     <div className="page">
       <div className="page-header">
         <div>
-          <span className="eyebrow">Hostel Dining</span>
-          <h1>Mess &amp; Dining Hall</h1>
+          <span className="eyebrow">Dining &amp; Nutrition</span>
+          <h1>Hostel Mess &amp; Dining Hall</h1>
         </div>
         <div className="page-header-actions">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--surface)', padding: '6px 14px', borderRadius: 8, border: '1px solid var(--line)' }}>
             <Star size={15} fill="var(--accent-border)" color="var(--accent-border)" />
             <span style={{ fontSize: 13, fontWeight: 700 }}>{avgRating || '4.5'} / 5.0</span>
-            <span style={{ fontSize: 12, color: 'var(--ink-faint)' }}>({feedback.length} student reviews)</span>
+            <span style={{ fontSize: 12, color: 'var(--ink-faint)' }}>({feedback.length} verified student reviews)</span>
           </div>
         </div>
       </div>
 
-      {/* TODAY'S MEAL SCHEDULE - 4 MEALS INCLUDING SNACKS */}
-      <div className="panel">
+      {/* INTERACTIVE CLICKABLE DAY SELECTOR (Mon - Sun) */}
+      <div className="panel" style={{ padding: '12px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={handlePrevDay}
+              aria-label="Previous day"
+              style={{ padding: '6px 8px' }}
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink-soft)' }}>Select Day:</span>
+          </div>
+
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', flex: 1, justifyContent: 'center' }}>
+            {DAYS.map((d) => {
+              const isSelected = d === activeDay
+              const isCurrentCalendarDay = d === todayDayName
+              return (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => setActiveDay(d)}
+                  className={`btn btn-sm ${isSelected ? 'btn-primary' : 'btn-ghost'}`}
+                  style={{
+                    position: 'relative',
+                    padding: '7px 14px',
+                    fontWeight: isSelected ? 700 : 500,
+                  }}
+                >
+                  {d}
+                  {isCurrentCalendarDay && (
+                    <span
+                      style={{
+                        position: 'absolute',
+                        top: -5,
+                        right: -4,
+                        fontSize: 9,
+                        background: isSelected ? '#132216' : 'var(--accent)',
+                        color: isSelected ? '#FFFFFF' : 'var(--accent-ink)',
+                        padding: '1px 4px',
+                        borderRadius: 4,
+                        fontWeight: 800,
+                      }}
+                    >
+                      TODAY
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={handleNextDay}
+            aria-label="Next day"
+            style={{ padding: '6px 8px' }}
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      </div>
+
+      {/* ACTIVE SELECTED DAY DISPLAY WITH RIGHT-SIDE ADD-ONS */}
+      <div className="panel" style={{ border: '2px solid var(--accent-border)' }}>
         <div className="panel-head">
           <div>
-            <h3>Today's Meal Timetable — {today.day}</h3>
-            <p>Freshly prepared daily according to the nutrition and mess committee schedule</p>
-          </div>
-          <span className="badge badge-ok">
-            <span className="badge-dot" /> Live Dining Today
-          </span>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
-          {['Breakfast', 'Lunch', 'Snacks', 'Dinner'].map((meal) => {
-            const meta = MEAL_INFO[meal]
-            const Icon = meta.icon
-            const isLunch = meal === 'Lunch'
-            return (
-              <div
-                key={meal}
-                style={{
-                  background: isLunch ? 'var(--accent-soft)' : 'var(--bg-alt)',
-                  border: `1.5px solid ${isLunch ? 'rgba(99, 200, 0, 0.4)' : 'var(--line)'}`,
-                  borderRadius: 12,
-                  padding: '16px 18px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 8,
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 7, fontWeight: 700, fontSize: 14.5, color: 'var(--ink)' }}>
-                    <Icon size={17} color={meta.color} /> {meal}
-                  </span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>
-                    <Clock size={12} /> {meta.time}
-                  </span>
-                </div>
-
-                <p style={{ fontSize: 13, color: 'var(--ink)', lineHeight: 1.5, fontWeight: 500 }}>
-                  {today[meal.toLowerCase()]}
-                </p>
-
-                {isLunch && today.lunchSpecial && (
-                  <div style={{ marginTop: 'auto', paddingTop: 6, fontSize: 12, color: 'var(--accent-border)', fontWeight: 600 }}>
-                    ★ Special: {today.lunchSpecial}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* WEEKLY ALL MEALS TIMETABLE & FEEDBACK COLLECTION */}
-      <div className="two-col">
-        {/* LEFT COLUMN: WEEKLY TIMETABLE SHOWING ALL MEALS & SNACKS */}
-        <div className="panel">
-          <div className="panel-head">
-            <div>
-              <h3>Weekly Mess Timetable</h3>
-              <p>All meals &amp; snacks across Monday to Sunday</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <h3>{activeDayMenu.day}&apos;s Dining Schedule &amp; Add-Ons</h3>
+              {isToday && (
+                <span className="badge badge-ok">
+                  <span className="badge-dot" /> Live Serving Today
+                </span>
+              )}
+              <span className="badge badge-info">{activeDayMenu.dietType || 'Pure Veg'}</span>
             </div>
-            {role === 'admin' && (
-              <button
-                type="button"
-                className="btn btn-primary btn-sm"
-                onClick={() => handleOpenEditMenu(today)}
-              >
-                <Edit3 size={14} /> Edit Timetable
-              </button>
+            {activeDayMenu.nutrition && (
+              <p className="mono" style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
+                {activeDayMenu.nutrition}
+              </p>
             )}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {menu.map((d) => {
-              const isCurrentDay = d.day === today.day
+          {role === 'warden' && (
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={() => handleOpenEditMenu(activeDayMenu)}
+            >
+              <Edit3 size={14} /> Edit {activeDayMenu.day}&apos;s Menu
+            </button>
+          )}
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.6fr) minmax(280px, 1fr)', gap: 16, alignItems: 'start' }}>
+          {/* Left Column: 4 Daily Meal Sessions */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+            {['Breakfast', 'Lunch', 'Snacks', 'Dinner'].map((meal) => {
+              const meta = MEAL_INFO[meal]
+              const Icon = meta.icon
+              const isLunch = meal === 'Lunch'
+              const mealText = activeDayMenu[meal.toLowerCase()]
+
               return (
                 <div
-                  key={d.day}
+                  key={meal}
                   style={{
-                    background: isCurrentDay ? 'var(--accent-soft)' : 'var(--surface)',
-                    border: `1px solid ${isCurrentDay ? 'rgba(99, 200, 0, 0.4)' : 'var(--line)'}`,
-                    borderRadius: 10,
+                    background: isLunch ? 'var(--accent-soft)' : 'var(--surface-2)',
+                    border: `1.5px solid ${isLunch ? 'rgba(99, 200, 0, 0.4)' : 'var(--line)'}`,
+                    borderRadius: 12,
                     padding: '14px 16px',
                     display: 'flex',
                     flexDirection: 'column',
@@ -224,234 +309,293 @@ export default function Mess() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span className="mono" style={{ fontWeight: 700, fontSize: 14, color: isCurrentDay ? 'var(--accent-border)' : 'var(--ink)' }}>
-                        {d.day}
-                      </span>
-                      {isCurrentDay && (
-                        <span style={{ fontSize: 10.5, fontWeight: 700, background: 'var(--accent)', color: 'var(--accent-ink)', padding: '1px 6px', borderRadius: 4 }}>
-                          TODAY
-                        </span>
-                      )}
-                      <span className="badge badge-info" style={{ fontSize: 10.5, padding: '2px 7px' }}>
-                        {d.dietType || 'Pure Veg'}
-                      </span>
-                    </div>
-
-                    {role === 'admin' && (
-                      <button
-                        type="button"
-                        className="btn btn-ghost btn-sm"
-                        onClick={() => handleOpenEditMenu(d)}
-                        style={{ padding: '3px 8px', fontSize: 11 }}
-                      >
-                        <Edit3 size={12} /> Edit
-                      </button>
-                    )}
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 7, fontWeight: 700, fontSize: 14, color: 'var(--ink)' }}>
+                      <Icon size={16} color={meta.color} /> {meal}
+                    </span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10.5, color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>
+                      <Clock size={11} /> {meta.time}
+                    </span>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 5, fontSize: 12.5, color: 'var(--ink)' }}>
-                    <div><strong style={{ color: 'var(--accent-border)' }}>Breakfast:</strong> {d.breakfast}</div>
-                    <div><strong style={{ color: '#059669' }}>Lunch:</strong> {d.lunch}</div>
-                    <div><strong style={{ color: '#D97706' }}>Snacks:</strong> {d.snacks}</div>
-                    <div><strong style={{ color: '#0284C7' }}>Dinner:</strong> {d.dinner}</div>
-                    {d.lunchSpecial && (
-                      <div style={{ fontSize: 11.5, color: 'var(--ink-soft)', marginTop: 2 }}>
-                        ★ <em>Chef's Special:</em> {d.lunchSpecial}
-                      </div>
-                    )}
-                  </div>
+                  <p style={{ fontSize: 12.5, color: 'var(--ink)', lineHeight: 1.45, fontWeight: 500, margin: 0 }}>
+                    {mealText}
+                  </p>
                 </div>
               )
             })}
           </div>
-        </div>
 
-        {/* RIGHT COLUMN: FEEDBACK COLLECTION & RECENT REVIEWS */}
-        <div className="panel">
-          {role !== 'admin' && (
-            <>
-              <div className="panel-head">
-                <div>
-                  <h3>Meal Feedback Collection</h3>
-                  <p>Rate taste, hygiene, and send suggestions to the Mess Committee</p>
-                </div>
+          {/* Right Column: Add-Ons Counter & Real-Time Bill Calculator */}
+          <div
+            style={{
+              background: 'var(--surface-2)',
+              border: '1.5px solid var(--line-strong)',
+              borderRadius: 12,
+              padding: 16,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 12,
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--line)', paddingBottom: 8 }}>
+              <div>
+                <strong style={{ fontSize: 14, color: 'var(--ink)' }}>Dining Add-Ons</strong>
+                <p style={{ margin: 0, fontSize: 11, color: 'var(--ink-soft)' }}>Extra sides billed to resident account</p>
               </div>
-
-              <form onSubmit={submitFeedback} style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 22 }}>
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <div style={{ flex: 1 }}>
-                    <label>Meal Type</label>
-                    <select value={mealType} onChange={(e) => setMealType(e.target.value)}>
-                      <option>Lunch</option>
-                      <option>Breakfast</option>
-                      <option>Snacks</option>
-                      <option>Dinner</option>
-                    </select>
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <label>Day</label>
-                    <select value={selectedDay} onChange={(e) => setSelectedDay(e.target.value)}>
-                      {menu.map((m) => (
-                        <option key={m.day} value={m.day}>{m.day}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label>Food Quality &amp; Taste Rating</label>
-                  <StarRow value={rating} onChange={setRating} size={22} />
-                </div>
-
-                <div>
-                  <label>Cleanliness &amp; Dining Hall Hygiene</label>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    {[3, 4, 5].map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => setHygieneRating(s)}
-                        className={`btn btn-sm ${hygieneRating === s ? 'btn-primary' : 'btn-ghost'}`}
-                        style={{ fontSize: 12 }}
-                      >
-                        {s === 5 ? 'Excellent Hygiene' : s === 4 ? 'Good' : 'Satisfactory'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label>Comments &amp; Menu Suggestions (Optional)</label>
-                  <textarea
-                    rows={2}
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    placeholder="e.g. Sambar seasoning was great; request extra rasam counter on Tuesdays..."
-                  />
-                </div>
-
-                <button type="submit" className="btn btn-primary" style={{ alignSelf: 'flex-start' }}>
-                  <MessageSquare size={15} /> Submit Meal Feedback
-                </button>
-              </form>
-            </>
-          )}
-
-          <div className="panel-head" style={{ marginTop: role !== 'admin' ? 10 : 0 }}>
-            <div>
-              <h3>Recent Student Feedbacks</h3>
-              <p>Click any feedback to inspect in detail ({feedback.length} total)</p>
+              <span className="badge badge-info">Optional Sides</span>
             </div>
-            <span style={{ fontSize: 11, color: 'var(--ink-faint)', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <ShieldCheck size={14} color="#059669" /> Verified Residents
-            </span>
-          </div>
 
-          <div className="activity-feed">
-            {feedback.map((f) => (
-              <div
-                className="activity-item"
-                key={f.id}
-                onClick={() => setInspectingFeedback(f)}
-                style={{
-                  background: 'var(--bg-alt)',
-                  padding: 12,
-                  borderRadius: 10,
-                  cursor: 'pointer',
-                  border: '1px solid var(--line)',
-                  transition: 'border-color 0.15s ease, transform 0.15s ease',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--accent-border)')}
-                onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--line)')}
-              >
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>
-                      {f.studentName}{' '}
-                      <span className="mono" style={{ color: 'var(--ink-faint)', fontWeight: 400, fontSize: 11 }}>
-                        ({f.studentRoll || 'Roll No. 24104031'})
-                      </span>
-                    </span>
-                    <StarRow value={f.rating} size={13} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {Object.entries(addOns).map(([key, item]) => (
+                <div
+                  key={key}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '8px 10px',
+                    borderRadius: 8,
+                    background: item.count > 0 ? 'var(--accent-soft)' : 'var(--surface)',
+                    border: `1px solid ${item.count > 0 ? 'var(--accent-border)' : 'var(--line)'}`,
+                  }}
+                >
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--ink)' }}>
+                      {item.name} <span style={{ color: 'var(--accent-border)', fontWeight: 800 }}>₹{item.price}</span>
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--ink-soft)' }}>{item.desc}</div>
                   </div>
 
-                  <div style={{ fontSize: 11.5, color: 'var(--ink-soft)', display: 'flex', gap: 10, marginBottom: 4 }}>
-                    <span style={{ fontWeight: 600, color: 'var(--accent-border)' }}>{f.mealType} · {f.day}</span>
-                    <span>{f.date}</span>
-                    {f.committeeReviewed ? (
-                      <span style={{ color: '#059669', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                        <CheckCircle2 size={11} /> Reviewed
+                  {role === 'student' && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <button
+                        type="button"
+                        onClick={() => updateAddOnCount(key, -1)}
+                        disabled={item.count === 0}
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: 4,
+                          border: '1px solid var(--line-strong)',
+                          background: 'var(--surface)',
+                          cursor: item.count === 0 ? 'not-allowed' : 'pointer',
+                          fontWeight: 800,
+                          color: 'var(--ink)',
+                        }}
+                      >
+                        –
+                      </button>
+                      <span className="mono" style={{ width: 18, textAlign: 'center', fontWeight: 800, fontSize: 13 }}>
+                        {item.count}
                       </span>
-                    ) : (
-                      <span style={{ color: 'var(--blue)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                        <Eye size={11} /> Click to view
-                      </span>
-                    )}
-                  </div>
-
-                  {f.comment && (
-                    <div style={{ fontSize: 12.5, color: 'var(--ink)', lineHeight: 1.4 }}>
-                      "{f.comment}"
+                      <button
+                        type="button"
+                        onClick={() => updateAddOnCount(key, 1)}
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: 4,
+                          border: '1px solid var(--accent-border)',
+                          background: 'var(--accent-border)',
+                          color: '#0b1b11',
+                          cursor: 'pointer',
+                          fontWeight: 800,
+                        }}
+                      >
+                        +
+                      </button>
                     </div>
                   )}
                 </div>
+              ))}
+            </div>
+
+            {/* Live Bill Summary */}
+            <div
+              style={{
+                marginTop: 6,
+                padding: '10px 12px',
+                borderRadius: 8,
+                background: 'rgba(0, 0, 0, 0.15)',
+                border: '1px solid var(--line)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <div>
+                <span style={{ fontSize: 11, color: 'var(--ink-soft)', display: 'block' }}>Add-ons Total ({totalItemCount} items)</span>
+                <span className="mono" style={{ fontSize: 16, fontWeight: 900, color: 'var(--accent-border)' }}>
+                  ₹{totalAddOnBill}
+                </span>
               </div>
-            ))}
+
+              {role === 'student' && (
+                <button
+                  type="button"
+                  className="btn btn-sm btn-primary"
+                  disabled={totalAddOnBill === 0}
+                  onClick={handleOrderAddOns}
+                  style={{ fontSize: 12, padding: '6px 12px' }}
+                >
+                  Order Add-ons
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* WARDEN EDIT MESS MENU MODAL */}
+      {/* FEEDBACK & STUDENT REVIEWS SECTION */}
+      <div className="two-col">
+        {/* Submit Review for Active Day */}
+        {role !== 'admin' && (
+          <div className="panel">
+            <div className="panel-head">
+              <div>
+                <h3>Rate {activeDay}'s Food &amp; Dining Hall</h3>
+                <p>Send instant quality remarks directly to the Mess Committee</p>
+              </div>
+            </div>
+
+            <form onSubmit={submitFeedback} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div>
+                <label>Select Meal Session</label>
+                <select value={mealType} onChange={(e) => setMealType(e.target.value)}>
+                  <option>Lunch</option>
+                  <option>Breakfast</option>
+                  <option>Snacks</option>
+                  <option>Dinner</option>
+                </select>
+              </div>
+
+              <div>
+                <label>Food Taste &amp; Temperature Rating</label>
+                <StarRow value={rating} onChange={setRating} size={22} />
+              </div>
+
+              <div>
+                <label>Dining Cleanliness &amp; Hygiene</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {[3, 4, 5].map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setHygieneRating(s)}
+                      className={`btn btn-sm ${hygieneRating === s ? 'btn-primary' : 'btn-ghost'}`}
+                      style={{ fontSize: 12 }}
+                    >
+                      {s === 5 ? 'Excellent Hygiene' : s === 4 ? 'Good' : 'Satisfactory'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label>Suggestions &amp; Comments (Optional)</label>
+                <textarea
+                  rows={2}
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder={`e.g. ${activeDay} ${mealType} was fresh; recommend extra lemon pickle on the counter...`}
+                />
+              </div>
+
+              <button type="submit" className="btn btn-primary" style={{ alignSelf: 'flex-start' }}>
+                <MessageSquare size={15} /> Submit {activeDay} Feedback
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* Reviews List */}
+        <div className="panel">
+          <div className="panel-head">
+            <div>
+              <h3>Student Reviews for {activeDay}</h3>
+              <p>{dayFeedback.length} review(s) on record for this weekday</p>
+            </div>
+          </div>
+
+          {dayFeedback.length === 0 ? (
+            <p style={{ fontSize: 13, color: 'var(--ink-soft)', fontStyle: 'italic' }}>
+              No written reviews submitted for {activeDay} yet. Be the first to share your dining experience!
+            </p>
+          ) : (
+            <div className="activity-feed">
+              {dayFeedback.map((f) => (
+                <div
+                  key={f.id}
+                  className="activity-item"
+                  onClick={() => setInspectingFeedback(f)}
+                  style={{
+                    background: 'var(--surface-2)',
+                    padding: 12,
+                    borderRadius: 10,
+                    cursor: 'pointer',
+                    border: '1px solid var(--line)',
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700 }}>
+                        {f.studentName}{' '}
+                        <span className="mono" style={{ color: 'var(--ink-faint)', fontWeight: 400, fontSize: 11 }}>
+                          ({f.studentRoll})
+                        </span>
+                      </span>
+                      <StarRow value={f.rating} size={13} />
+                    </div>
+
+                    <div style={{ fontSize: 11.5, color: 'var(--ink-soft)', display: 'flex', gap: 10, marginBottom: 4 }}>
+                      <span style={{ fontWeight: 700, color: 'var(--accent-border)' }}>{f.mealType}</span>
+                      <span>{f.date}</span>
+                      {f.committeeReviewed && (
+                        <span style={{ color: '#059669', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                          <CheckCircle2 size={11} /> Reviewed by Warden
+                        </span>
+                      )}
+                    </div>
+
+                    {f.comment && (
+                      <div style={{ fontSize: 12.5, color: 'var(--ink)', lineHeight: 1.4 }}>
+                        "{f.comment}"
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* WARDEN EDIT MENU MODAL */}
       {editingDay && menuForm && (
         <Modal
-          title={`Edit Mess Menu — ${menuForm.day}`}
-          subtitle="Update meal items and dietary highlights for the dining hall schedule"
+          title={`Edit Mess Schedule — ${menuForm.day}`}
+          subtitle="Update food items and dietary highlights"
           onClose={() => { setEditingDay(null); setMenuForm(null) }}
           footer={
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, width: '100%' }}>
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => { setEditingDay(null); setMenuForm(null) }}
-              >
+              <button type="button" className="btn btn-ghost" onClick={() => { setEditingDay(null); setMenuForm(null) }}>
                 Cancel
               </button>
               <button type="submit" form="edit-menu-form" className="btn btn-primary">
-                Save Changes
+                Save Timetable Changes
               </button>
             </div>
           }
         >
           <form id="edit-menu-form" onSubmit={handleSaveMenu} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div>
-              <label>Day</label>
-              <select
-                value={menuForm.day}
-                onChange={(e) => {
-                  const targetDay = menu.find((m) => m.day === e.target.value)
-                  if (targetDay) {
-                    setMenuForm({ ...targetDay })
-                    setEditingDay(targetDay.day)
-                  }
-                }}
-              >
-                {menu.map((m) => (
-                  <option key={m.day} value={m.day}>{m.day}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label>Diet Type &amp; Highlight</label>
+              <label>Diet Highlight</label>
               <input
                 type="text"
                 value={menuForm.dietType}
                 onChange={(e) => setMenuForm({ ...menuForm, dietType: e.target.value })}
-                placeholder="e.g. Pure Veg / Special Feast"
               />
             </div>
-
             <div>
               <label>Breakfast Menu</label>
               <textarea
@@ -460,7 +604,6 @@ export default function Mess() {
                 onChange={(e) => setMenuForm({ ...menuForm, breakfast: e.target.value })}
               />
             </div>
-
             <div>
               <label>Lunch Menu</label>
               <textarea
@@ -469,25 +612,22 @@ export default function Mess() {
                 onChange={(e) => setMenuForm({ ...menuForm, lunch: e.target.value })}
               />
             </div>
-
             <div>
-              <label>Chef's Special Lunch Item</label>
+              <label>Chef's Special Lunch Highlight</label>
               <input
                 type="text"
                 value={menuForm.lunchSpecial}
                 onChange={(e) => setMenuForm({ ...menuForm, lunchSpecial: e.target.value })}
               />
             </div>
-
             <div>
-              <label>Evening Snacks Menu</label>
+              <label>Evening Snacks &amp; Tea</label>
               <textarea
                 rows={2}
                 value={menuForm.snacks}
                 onChange={(e) => setMenuForm({ ...menuForm, snacks: e.target.value })}
               />
             </div>
-
             <div>
               <label>Dinner Menu</label>
               <textarea
@@ -500,104 +640,50 @@ export default function Mess() {
         </Modal>
       )}
 
-      {/* STUDENT FEEDBACK POPUP INSPECTION MODAL */}
+      {/* STUDENT FEEDBACK INSPECTION MODAL */}
       {inspectingFeedback && (
         <Modal
-          title="Student Dining Feedback"
+          title="Dining Review Details"
           subtitle={`Feedback #${inspectingFeedback.id} · ${inspectingFeedback.date}`}
           onClose={() => setInspectingFeedback(null)}
           footer={
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, width: '100%' }}>
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => setInspectingFeedback(null)}
-              >
+              <button type="button" className="btn btn-ghost" onClick={() => setInspectingFeedback(null)}>
                 Close
               </button>
-              {role === 'admin' && !inspectingFeedback.committeeReviewed && (
+              {role === 'warden' && !inspectingFeedback.committeeReviewed && (
                 <button
                   type="button"
                   className="btn btn-primary"
                   onClick={() => handleAcknowledgeFeedback(inspectingFeedback)}
                 >
-                  Mark as Reviewed
+                  Acknowledge as Reviewed
                 </button>
               )}
             </div>
           }
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, background: 'var(--bg-alt)', padding: 14, borderRadius: 10 }}>
-              <div>
-                <span className="profile-detail-label" style={{ fontSize: 11 }}>Student Name</span>
-                <div style={{ fontWeight: 600, fontSize: 14 }}>{inspectingFeedback.studentName}</div>
-              </div>
-              <div>
-                <span className="profile-detail-label" style={{ fontSize: 11 }}>Roll Number</span>
-                <div className="mono" style={{ fontWeight: 700, fontSize: 14 }}>
-                  {inspectingFeedback.studentRoll || '24104031'}
-                </div>
-              </div>
-              <div>
-                <span className="profile-detail-label" style={{ fontSize: 11 }}>Room &amp; Block</span>
-                <div style={{ fontWeight: 600 }}>{inspectingFeedback.roomNumber || 'A-101'}</div>
-              </div>
-              <div>
-                <span className="profile-detail-label" style={{ fontSize: 11 }}>Meal &amp; Day</span>
-                <div style={{ fontWeight: 600 }}>{inspectingFeedback.mealType} · {inspectingFeedback.day}</div>
-              </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, background: 'var(--surface-2)', padding: 12, borderRadius: 8 }}>
+              <div><span className="profile-detail-label">Student:</span> <strong>{inspectingFeedback.studentName}</strong></div>
+              <div><span className="profile-detail-label">Roll No:</span> <strong className="mono">{inspectingFeedback.studentRoll}</strong></div>
+              <div><span className="profile-detail-label">Meal:</span> <strong>{inspectingFeedback.mealType} ({inspectingFeedback.day})</strong></div>
+              <div><span className="profile-detail-label">Hygiene:</span> <strong>{inspectingFeedback.hygieneRating}/5 Stars</strong></div>
             </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', border: '1px solid var(--line)', borderRadius: 10 }}>
-              <div>
-                <span className="profile-detail-label" style={{ fontSize: 11 }}>Food Quality &amp; Taste</span>
-                <div style={{ marginTop: 4 }}><StarRow value={inspectingFeedback.rating} size={18} /></div>
-              </div>
-              <div>
-                <span className="profile-detail-label" style={{ fontSize: 11 }}>Dining Hygiene Rating</span>
-                <div style={{ marginTop: 4 }}>
-                  <span className="badge badge-ok">
-                    {inspectingFeedback.hygieneRating === 5 ? 'Excellent (5/5)' : 'Good (4/5)'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
             <div>
-              <label>Student's Comments &amp; Suggestions</label>
-              <div
-                style={{
-                  background: 'var(--surface-2)',
-                  padding: 14,
-                  borderRadius: 8,
-                  fontSize: 13.5,
-                  lineHeight: 1.5,
-                  color: 'var(--ink)',
-                  fontStyle: inspectingFeedback.comment ? 'normal' : 'italic',
-                }}
-              >
-                {inspectingFeedback.comment ? `“${inspectingFeedback.comment}”` : 'No written remarks provided.'}
-              </div>
+              <span className="profile-detail-label">Comment:</span>
+              <p style={{ marginTop: 4, fontSize: 13.5, color: 'var(--ink)' }}>
+                "{inspectingFeedback.comment || 'No written remark.'}"
+              </p>
             </div>
-
-            {inspectingFeedback.adminNote && (
-              <div style={{ background: 'var(--accent-soft)', padding: 12, borderRadius: 8, border: '1px solid var(--accent-border)' }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent-border)', textTransform: 'uppercase' }}>
-                  Warden Note:
-                </span>
-                <p style={{ fontSize: 12.5, color: 'var(--ink)', marginTop: 2 }}>{inspectingFeedback.adminNote}</p>
-              </div>
-            )}
-
-            {role === 'admin' && !inspectingFeedback.committeeReviewed && (
+            {role === 'warden' && !inspectingFeedback.committeeReviewed && (
               <div>
-                <label>Add Warden Action / Committee Note</label>
+                <label>Warden Committee Note</label>
                 <input
                   type="text"
+                  placeholder="e.g. Shared with caterer; extra spice station added."
                   value={wardenNote}
                   onChange={(e) => setWardenNote(e.target.value)}
-                  placeholder="e.g. Discussed with caterer; extra spice counter added."
                 />
               </div>
             )}

@@ -1,15 +1,30 @@
 .toast-stack {
   position: fixed;
-  bottom: 22px;
-  right: 22px;
-  z-index: 200;
+  bottom: 24px;
+  left: 260px;
+  z-index: 10005;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-width: 320px;
+  max-width: 360px;
+  transition: left 0.22s ease;
+  pointer-events: none;
+}
+
+.toast-stack.sidebar-collapsed {
+  left: 104px;
+}
+
+@media (max-width: 980px) {
+  .toast-stack,
+  .toast-stack.sidebar-collapsed {
+    left: 20px;
+    bottom: 20px;
+  }
 }
 
 .toast {
+  pointer-events: auto;
   display: flex;
   align-items: center;
   gap: 10px;

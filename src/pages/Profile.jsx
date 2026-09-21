@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Camera, Trash2, DoorOpen, CreditCard, Briefcase, Phone, Mail, Edit3, ShieldCheck, User } from 'lucide-react'
+import { Camera, Trash2, DoorOpen, CreditCard, Briefcase, Phone, Mail, Edit3, ShieldCheck, User, Lock } from 'lucide-react'
 import Modal from '../components/common/Modal'
 import { selectAuth, selectUser, updateUserProfile } from '../store/slices/authSlice'
 import { selectMyRoom } from '../store/slices/roomsSlice'
@@ -18,21 +18,19 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({
     name: user.name || '',
-    rollNo: user.rollNo || user.regNo || '',
-    roomNumber: user.roomNumber || '',
-    designation: user.designation || '',
     phone: user.phone || '+91 98401 23456',
     email: user.email || 'resident@campus.edu',
+    roomNumber: user.roomNumber || '',
+    designation: user.designation || '',
   })
 
   const openEditModal = () => {
     setFormData({
       name: user.name || '',
-      rollNo: user.rollNo || user.regNo || '',
-      roomNumber: user.roomNumber || '',
-      designation: user.designation || '',
       phone: user.phone || (role === 'admin' ? '+91 94440 01101' : '+91 98401 23456'),
       email: user.email || (role === 'admin' ? 'warden.office@campus.edu' : 'student@campus.edu'),
+      roomNumber: user.roomNumber || '',
+      designation: user.designation || '',
     })
     setIsEditing(true)
   }
@@ -56,7 +54,6 @@ export default function Profile() {
         role,
         updates: {
           ...formData,
-          regNo: formData.rollNo,
           avatarInitials: initials || user.avatarInitials,
         },
       })
@@ -88,13 +85,18 @@ export default function Profile() {
     dispatch(pushToast('Profile photo removed.', 'info'))
   }
 
+  const identifier = role === 'admin'
+    ? (user.staffId || 'STAFF-1001')
+    : (user.rollNo || user.regNo || '24104031')
+
   return (
     <div className="page">
       <div className="page-header">
         <div>
-          <span className="eyebrow">Account</span>
+          <span className="eyebrow">Institutional Account</span>
           <h1>My Profile</h1>
         </div>
+        {/* Single, consolidated Edit Profile button */}
         <button className="btn btn-primary" onClick={openEditModal}>
           <Edit3 size={15} /> Edit Profile
         </button>
@@ -130,16 +132,15 @@ export default function Profile() {
           <h2 className="profile-name">{user.name}</h2>
           <p className="profile-role-label">
             {role === 'admin'
-              ? `${user.designation || 'Chief Warden'} · Campus Administration`
-              : `Resident · Roll No. ${user.rollNo || user.regNo || '24104031'}`}
+              ? `${user.designation || 'System Administrator'} · Central Administration`
+              : role === 'warden'
+              ? `${user.designation || 'Chief Warden'} · Residential Office`
+              : `Resident · Roll No. ${identifier}`}
           </p>
 
           <div className="profile-actions">
             <button className="btn btn-blue btn-sm" onClick={() => fileInputRef.current?.click()}>
               <Camera size={14} /> Change photo
-            </button>
-            <button className="btn btn-ghost btn-sm" onClick={openEditModal}>
-              <Edit3 size={14} /> Edit details
             </button>
             {(photo || user.avatarUrl) && (
               <button className="btn btn-ghost btn-sm" onClick={handleRemovePhoto}>
@@ -153,11 +154,8 @@ export default function Profile() {
           <div className="panel-head">
             <div>
               <h3>Account Details</h3>
-              <p>Verified information on record for your hostel account</p>
+              <p>Verified information on record for your campus hostel profile</p>
             </div>
-            <button className="btn btn-ghost btn-sm" onClick={openEditModal}>
-              <Edit3 size={13} /> Edit
-            </button>
           </div>
           <div className="profile-detail-list">
             <div className="profile-detail-row">
@@ -170,13 +168,29 @@ export default function Profile() {
 
             <div className="profile-detail-row">
               <CreditCard size={15} />
-              <div>
-                <span className="profile-detail-label">{role === 'admin' ? 'Staff ID' : 'Roll Number'}</span>
-                <span className="profile-detail-value mono">{user.rollNo || user.regNo || (role === 'admin' ? 'STAFF-1001' : '24104031')}</span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                <div>
+                  <span className="profile-detail-label">{role === 'student' ? 'Roll Number' : 'Staff ID'}</span>
+                  <span className="profile-detail-value mono">{identifier}</span>
+                </div>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    fontSize: '0.75rem',
+                    color: 'var(--text-muted)',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    padding: '3px 8px',
+                    borderRadius: 4,
+                  }}
+                >
+                  <Lock size={11} /> Read-only
+                </span>
               </div>
             </div>
 
-            {role === 'resident' ? (
+            {role === 'student' ? (
               <div className="profile-detail-row">
                 <DoorOpen size={15} />
                 <div>
@@ -192,7 +206,7 @@ export default function Profile() {
                 <div>
                   <span className="profile-detail-label">Designation &amp; Office</span>
                   <span className="profile-detail-value">
-                    {user.designation || 'Chief Warden'} · {user.roomNumber || 'Warden Office, Block A'}
+                    {user.designation || (role === 'admin' ? 'Hostel Administrator' : 'Chief Warden')} · {user.roomNumber || 'Central Office'}
                   </span>
                 </div>
               </div>
@@ -217,9 +231,9 @@ export default function Profile() {
             <div className="profile-detail-row">
               <ShieldCheck size={15} color="#059669" />
               <div>
-                <span className="profile-detail-label">Account Verification</span>
-                <span className="profile-detail-value" style={{ color: '#059669' }}>
-                  Verified Active Account
+                <span className="profile-detail-label">Verification Status</span>
+                <span className="profile-detail-value" style={{ color: 'var(--accent-green)' }}>
+                  Institutional Identity Verified
                 </span>
               </div>
             </div>
@@ -227,11 +241,11 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* EDIT PROFILE MODAL */}
+      {/* SINGLE EDIT PROFILE MODAL */}
       {isEditing && (
         <Modal
           title="Edit Profile"
-          subtitle="Update personal information, roll number, and contact details"
+          subtitle="Update your contact details and display preferences"
           onClose={() => setIsEditing(false)}
           footer={
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, width: '100%' }}>
@@ -256,18 +270,28 @@ export default function Profile() {
               />
             </div>
 
+            {/* Read-only Staff ID / Roll Number */}
             <div>
-              <label>{role === 'admin' ? 'Staff ID' : 'Roll Number (e.g. 24104031)'}</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label>{role === 'student' ? 'Roll Number' : 'Staff ID'}</label>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                  <Lock size={11} /> Cannot be edited
+                </span>
+              </div>
               <input
                 type="text"
-                required
-                value={formData.rollNo}
-                onChange={(e) => setFormData({ ...formData, rollNo: e.target.value })}
-                placeholder={role === 'admin' ? 'STAFF-1001' : '24104031'}
+                disabled
+                value={identifier}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  cursor: 'not-allowed',
+                  opacity: 0.7,
+                  color: 'var(--text-muted)',
+                }}
               />
             </div>
 
-            {role === 'resident' ? (
+            {role === 'student' ? (
               <div>
                 <label>Room Number</label>
                 <input
@@ -279,7 +303,7 @@ export default function Profile() {
               </div>
             ) : (
               <div>
-                <label>Designation &amp; Office</label>
+                <label>Designation</label>
                 <input
                   type="text"
                   value={formData.designation}
@@ -302,15 +326,11 @@ export default function Profile() {
             <div>
               <label>Campus Email Address</label>
               <input
-                type="text"
+                type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="e.g. keerthana.g@campus.edu"
+                placeholder="e.g. resident@campus.edu"
               />
-            </div>
-
-            <div style={{ background: 'var(--bg-alt)', padding: 12, borderRadius: 8, fontSize: 12, color: 'var(--ink-soft)' }}>
-              Tip: You can also update your profile photo anytime by clicking "Change Photo" on the profile card.
             </div>
           </form>
         </Modal>

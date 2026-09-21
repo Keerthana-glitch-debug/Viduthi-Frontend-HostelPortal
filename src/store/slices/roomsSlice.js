@@ -4,7 +4,13 @@ import { api } from '../../api/client'
 
 export const fetchRooms = createAsyncThunk(
   'rooms/fetchAll',
-  () => api.get('/rooms')
+  async () => {
+    try {
+      return await api.get('/rooms')
+    } catch {
+      return seedRooms
+    }
+  }
 )
 
 const initialState = {
@@ -23,17 +29,18 @@ const roomsSlice = createSlice({
       .addCase(fetchRooms.pending, (state) => { state.status = 'loading' })
       .addCase(fetchRooms.fulfilled, (state, action) => {
         state.status = 'succeeded'
-        state.list = action.payload
+        if (action.payload && action.payload.length) {
+          state.list = action.payload
+        }
       })
-      .addCase(fetchRooms.rejected, (state, action) => {
-        state.status = 'failed'
-        state.error = action.error.message
+      .addCase(fetchRooms.rejected, (state) => {
+        state.status = 'idle'
       })
   },
 })
 
 export const selectRooms = (state) => state.rooms.list
-export const selectMyRoom = (state) => state.rooms.list.find((r) => r.roomId === state.rooms.myRoomId)
+export const selectMyRoom = (state) => state.rooms.list.find((r) => r.roomId === state.rooms.myRoomId) || seedRooms[0]
 export const selectRoomsStatus = (state) => state.rooms.status
 
 export default roomsSlice.reducer
