@@ -5,6 +5,7 @@ import { ShieldCheck, DoorOpen, ArrowRight, Phone, ShieldAlert, UserCog, Sparkle
 import { login } from '../store/slices/authSlice'
 import { selectUi, pushToast } from '../store/slices/uiSlice'
 import useTranslation from '../hooks/useTranslation'
+import brandLogo from '../assets/brand-logo.jpg'
 import './Login.css'
 
 export default function Login() {
@@ -58,13 +59,23 @@ export default function Login() {
               border: '2px solid var(--accent-border, #7CFC00)',
               boxShadow: '0 4px 16px rgba(124, 252, 0, 0.25)',
               margin: '0 auto 12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             <img
-              src="/brand-logo.jpg"
+              src={brandLogo}
               alt="Vidudhi Logo"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none'
+                if (e.currentTarget.nextSibling) {
+                  e.currentTarget.nextSibling.style.display = 'block'
+                }
+              }}
               style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             />
+            <DoorOpen size={24} color="var(--accent-border)" style={{ display: 'none' }} />
           </div>
           <h1 className="login-brand-title">Vidudhi</h1>
           <p className="login-brand-subtitle">

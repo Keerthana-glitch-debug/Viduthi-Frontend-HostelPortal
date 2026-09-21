@@ -9,6 +9,7 @@ import {
 import { selectAuth } from '../../store/slices/authSlice'
 import { toggleSidebar } from '../../store/slices/uiSlice'
 import useTranslation from '../../hooks/useTranslation'
+import brandLogo from '../../assets/brand-logo.jpg'
 import './Sidebar.css'
 
 const STUDENT_NAV = [
@@ -69,8 +70,14 @@ export default function Sidebar({ collapsed, onLogout, unreadCount }) {
       <div className="rack-brand">
         <div className="brand-mark">
           <img
-            src="/brand-logo.jpg"
+            src={brandLogo}
             alt="Vidudhi Logo"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none'
+              if (e.currentTarget.nextSibling) {
+                e.currentTarget.nextSibling.style.display = 'flex'
+              }
+            }}
             style={{
               width: 32,
               height: 32,
@@ -81,6 +88,20 @@ export default function Sidebar({ collapsed, onLogout, unreadCount }) {
               display: 'block',
             }}
           />
+          <div
+            style={{
+              display: 'none',
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              background: 'var(--accent-soft)',
+              border: '1.5px solid var(--accent-border)',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <KeyRound size={17} color="var(--accent-border)" />
+          </div>
         </div>
         {!collapsed && (
           <div className="brand-text">
