@@ -94,3 +94,81 @@ exports.updateLanguage = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// @desc    Enroll / Update Student Face Biometric Descriptor
+// @route   POST /api/user/enroll-face
+// @access  Private
+exports.enrollFace = async (req, res) => {
+  try {
+    const { descriptor, photo } = req.body;
+
+    if (!Array.isArray(descriptor) || descriptor.length !== 128) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid biometric descriptor. A valid 128-element Float32 vector is required.',
+      });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    user.faceDescriptor = descriptor;
+    user.isFaceEnrolled = true;
+    user.faceEnrolledAt = new Date();
+    if (photo) {
+      user.facePhoto = photo;
+    }
+    await user.save({ validateBeforeSave: false });
+
+    await recordActivity({
+      user,
+      action: 'ENROLLED_BIOMETRIC_FACE',
+      resourceType: 'biometrics',
+      title: `Biometric 128-D FaceID vector enrolled for ${user.name}`,
+      route: '/app/settings',
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Facial biometric profile enrolled successfully in database.',
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        rollNo: user.rollNo,
+        role: user.role,
+        isFaceEnrolled: user.isFaceEnrolled,
+        faceEnrolledAt: user.faceEnrolledAt,
+        facePhoto: user.facePhoto,
+        faceDescriptor: user.faceDescriptor,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get Student Face Biometric Profile
+// @route   GET /api/user/face-profile
+// @access  Private
+exports.getFaceProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.status(200).json({
+      success: true,
+      isFaceEnrolled: user.isFaceEnrolled || false,
+      faceEnrolledAt: user.faceEnrolledAt,
+      facePhoto: user.facePhoto,
+      faceDescriptor: user.faceDescriptor,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+

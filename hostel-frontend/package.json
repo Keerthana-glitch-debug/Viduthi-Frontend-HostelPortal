@@ -3,7 +3,7 @@
   "private": true,
   "version": "2.0.0",
   "type": "module",
-"homepage": "https://keerthana-glitch-debug.github.io/Viduthi-Frontend-HostelPortal",
+  "homepage": "https://keerthana-glitch-debug.github.io/Viduthi-Frontend-HostelPortal",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -13,7 +13,10 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.7",
+    "@vladmandic/face-api": "^1.7.15",
+    "jsqr": "^1.4.0",
     "lucide-react": "^0.383.0",
+    "qrcode": "^1.5.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-redux": "^9.1.2",

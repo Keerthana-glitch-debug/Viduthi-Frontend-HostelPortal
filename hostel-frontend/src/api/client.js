@@ -1,7 +1,7 @@
 // src/api/client.js — unified HTTP client for Vidudhi Hostel Resident Portal backend
 // Strictly authenticates requests with JWT Bearer tokens and propagates genuine server errors
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+const BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
 function getAuthHeader() {
   try {
@@ -27,7 +27,7 @@ async function request(path, options = {}) {
     })
   } catch (networkError) {
     // Network failure (server is offline or unreachable)
-    const err = new Error('Cannot connect to backend server at http://localhost:5000. Please ensure the backend is running.')
+    const err = new Error('Cannot connect to backend server. Please check your network or server status.')
     err.isNetworkError = true
     throw err
   }

@@ -84,6 +84,21 @@ const userSchema = new mongoose.Schema(
     lastLogin: {
       type: Date,
     },
+    faceDescriptor: {
+      type: [Number],
+      default: null,
+    },
+    isFaceEnrolled: {
+      type: Boolean,
+      default: false,
+    },
+    faceEnrolledAt: {
+      type: Date,
+    },
+    facePhoto: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,

@@ -9,6 +9,8 @@ import Badge from '../components/common/Badge'
 import Modal from '../components/common/Modal'
 import EmptyState from '../components/common/EmptyState'
 import Confetti from '../components/common/Confetti'
+import RealQrGatePass from '../components/common/RealQrGatePass'
+import SecurityCameraQrScanner from '../components/common/SecurityCameraQrScanner'
 import useFilter from '../hooks/useFilter'
 import { selectAuth, selectUser } from '../store/slices/authSlice'
 import { selectMyRoom } from '../store/slices/roomsSlice'
@@ -32,6 +34,7 @@ export default function LeaveRequests() {
   const [passLeave, setPassLeave] = useState(null)
   const [securityVerificationMode, setSecurityVerificationMode] = useState(false)
   const [exitVerifiedSuccess, setExitVerifiedSuccess] = useState(false)
+  const [scannedSecurityPass, setScannedSecurityPass] = useState(null)
   const [searchParams, setSearchParams] = useSearchParams()
 
   useEffect(() => {
@@ -92,6 +95,14 @@ export default function LeaveRequests() {
     } else {
       dispatch(pushToast(`Leave request for ${l.studentName} marked as Rejected.`, 'bad'))
     }
+  }
+
+  // Handle successful scan from Security Turnstile Camera
+  const handleSecurityScanned = (decodedPayload) => {
+    setScannedSecurityPass(decodedPayload)
+    setExitVerifiedSuccess(true)
+    const matchedName = decodedPayload.studentName || decodedPayload.student || passLeave?.studentName || 'Student'
+    dispatch(pushToast(`Gate Pass Verified for ${matchedName}! Departure allowed.`, 'ok'))
   }
 
   return (
@@ -466,41 +477,7 @@ export default function LeaveRequests() {
                     gap: 16,
                   }}
                 >
-                  <div
-                    style={{
-                      background: '#FFFFFF',
-                      padding: 8,
-                      borderRadius: 10,
-                      border: '1px solid #94A3B8',
-                      boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <svg width="105" height="105" viewBox="0 0 100 100">
-                      <rect width="100" height="100" fill="#ffffff" />
-                      <rect x="8" y="8" width="28" height="28" rx="2" fill="#0f172a" />
-                      <rect x="12" y="12" width="20" height="20" rx="1" fill="#ffffff" />
-                      <rect x="16" y="16" width="12" height="12" fill="#0284c7" />
-                      <rect x="64" y="8" width="28" height="28" rx="2" fill="#0f172a" />
-                      <rect x="68" y="12" width="20" height="20" rx="1" fill="#ffffff" />
-                      <rect x="72" y="16" width="12" height="12" fill="#0284c7" />
-                      <rect x="8" y="64" width="28" height="28" rx="2" fill="#0f172a" />
-                      <rect x="12" y="68" width="20" height="20" rx="1" fill="#ffffff" />
-                      <rect x="16" y="72" width="12" height="12" fill="#0284c7" />
-                      <rect x="42" y="12" width="8" height="8" fill="#0f172a" />
-                      <rect x="42" y="28" width="8" height="8" fill="#0284c7" />
-                      <rect x="12" y="42" width="8" height="8" fill="#0f172a" />
-                      <rect x="28" y="42" width="8" height="8" fill="#0284c7" />
-                      <rect x="42" y="42" width="16" height="16" rx="2" fill="#0f172a" />
-                      <rect x="64" y="42" width="8" height="8" fill="#0f172a" />
-                      <rect x="78" y="42" width="8" height="8" fill="#0284c7" />
-                      <rect x="42" y="64" width="8" height="8" fill="#0f172a" />
-                      <rect x="42" y="78" width="8" height="8" fill="#0284c7" />
-                      <rect x="64" y="64" width="8" height="8" fill="#0284c7" />
-                      <rect x="78" y="64" width="8" height="8" fill="#0f172a" />
-                      <rect x="64" y="78" width="16" height="14" fill="#0f172a" />
-                    </svg>
-                  </div>
+                  <RealQrGatePass pass={passLeave} size={115} includeDetails={true} />
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     <span style={{ fontSize: 12.5, fontWeight: 700, color: '#0F172A' }}>
@@ -589,51 +566,11 @@ export default function LeaveRequests() {
                   </p>
                 </div>
 
-                {/* Animated Scanner Viewfinder Box */}
-                <div
-                  style={{
-                    width: 200,
-                    height: 200,
-                    background: '#FFFFFF',
-                    borderRadius: 16,
-                    padding: 12,
-                    position: 'relative',
-                    overflow: 'hidden',
-                    border: '3px solid #38BDF8',
-                    boxShadow: '0 0 20px rgba(56, 189, 248, 0.4)',
-                  }}
-                >
-                  <svg width="100%" height="100%" viewBox="0 0 100 100">
-                    <rect width="100" height="100" fill="#ffffff" />
-                    <rect x="8" y="8" width="28" height="28" rx="2" fill="#0f172a" />
-                    <rect x="12" y="12" width="20" height="20" rx="1" fill="#ffffff" />
-                    <rect x="16" y="16" width="12" height="12" fill="#0284c7" />
-                    <rect x="64" y="8" width="28" height="28" rx="2" fill="#0f172a" />
-                    <rect x="68" y="12" width="20" height="20" rx="1" fill="#ffffff" />
-                    <rect x="72" y="16" width="12" height="12" fill="#0284c7" />
-                    <rect x="8" y="64" width="28" height="28" rx="2" fill="#0f172a" />
-                    <rect x="12" y="68" width="20" height="20" rx="1" fill="#ffffff" />
-                    <rect x="16" y="72" width="12" height="12" fill="#0284c7" />
-                    <rect x="42" y="12" width="8" height="8" fill="#0f172a" />
-                    <rect x="42" y="42" width="16" height="16" rx="2" fill="#0f172a" />
-                    <rect x="64" y="42" width="8" height="8" fill="#0f172a" />
-                    <rect x="64" y="78" width="16" height="14" fill="#0f172a" />
-                  </svg>
-
-                  {/* Animated Laser Scanning Beam */}
-                  <div
-                    style={{
-                      position: 'absolute',
-                      left: 0,
-                      right: 0,
-                      height: 3,
-                      background: '#22C55E',
-                      boxShadow: '0 0 8px 2px #22C55E',
-                      top: '50%',
-                      animation: 'pulse 1.5s infinite alternate',
-                    }}
-                  />
-                </div>
+                {/* Real Live Turnstile Camera Scanner */}
+                <SecurityCameraQrScanner
+                  onPassScanned={handleSecurityScanned}
+                  activePass={passLeave}
+                />
 
                 {/* Scanned Verification Result Card */}
                 <div
@@ -663,22 +600,19 @@ export default function LeaveRequests() {
 
                   <div style={{ display: 'grid', gridTemplateColumns: '90px 1fr', gap: '5px 8px', fontSize: 12, color: '#0F172A' }}>
                     <span style={{ color: '#475569', fontWeight: 600 }}>Name</span>
-                    <strong>: {passLeave.studentName || user?.name || 'Keerthana G'}</strong>
+                    <strong>: {scannedSecurityPass?.studentName || scannedSecurityPass?.student || passLeave.studentName || user?.name || 'Keerthana G'}</strong>
 
                     <span style={{ color: '#475569', fontWeight: 600 }}>Reg No</span>
-                    <strong className="mono">: {passLeave.studentRoll || user?.rollNo || '24104030'}</strong>
+                    <strong className="mono">: {scannedSecurityPass?.studentRoll || scannedSecurityPass?.rollNo || passLeave.studentRoll || user?.rollNo || '24104030'}</strong>
 
                     <span style={{ color: '#475569', fontWeight: 600 }}>Hostel</span>
-                    <strong>: Girls Hostel - Block B (Room {passLeave.roomNumber || 'B-37'})</strong>
+                    <strong>: Girls Hostel - Block B (Room {scannedSecurityPass?.roomNumber || passLeave.roomNumber || 'B-37'})</strong>
 
                     <span style={{ color: '#475569', fontWeight: 600 }}>Purpose</span>
-                    <strong>: {passLeave.reason || 'Academic Symposium & Family Visit'}</strong>
+                    <strong>: {scannedSecurityPass?.reason || passLeave.reason || 'Academic Symposium & Family Visit'}</strong>
 
-                    <span style={{ color: '#475569', fontWeight: 600 }}>Time</span>
-                    <strong>: 10:15 AM - 01:00 PM</strong>
-
-                    <span style={{ color: '#475569', fontWeight: 600 }}>Date</span>
-                    <strong>: {passLeave.fromDate || todayStr}</strong>
+                    <span style={{ color: '#475569', fontWeight: 600 }}>Valid Slot</span>
+                    <strong>: {scannedSecurityPass?.validFrom || passLeave.fromDate || todayStr} → {scannedSecurityPass?.validTo || passLeave.toDate || todayStr}</strong>
                   </div>
 
                   {/* Prominent Verification Action Button */}

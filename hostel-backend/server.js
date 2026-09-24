@@ -24,7 +24,7 @@ connectDB();
 const app = express();
 
 // Security HTTP headers
-app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: false }));
 
 // CORS configuration for React frontend
 app.use(
