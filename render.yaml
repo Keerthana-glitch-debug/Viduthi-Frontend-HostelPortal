@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: vidudhi-hostel-portal
+    env: node
+    plan: free
+    buildCommand: cd hostel-frontend && npm install && npm run build && cd ../hostel-backend && npm install
+    startCommand: node hostel-backend/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        value: mongodb+srv://keerthana:keer@cluster0.92rctps.mongodb.net/vidudhi?retryWrites=true&w=majority
+      - key: JWT_SECRET
+        value: vidudhi_keerthana_portal_jwt_secret_token_2026_xyz
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: AUDIT_HMAC_SECRET
+        value: vidudhi_keerthana_audit_hmac_secret_key_9981
+      - key: GOOGLE_CLIENT_ID
+        value: 953880868649-mopb50m92ocgpvm512va4kecm4slo96b.apps.googleusercontent.com
+      - key: HOSTEL_LAT
+        value: "13.0827"
+      - key: HOSTEL_LNG
+        value: "80.2707"
+      - key: GEOFENCE_RADIUS_METERS
+        value: "300"
