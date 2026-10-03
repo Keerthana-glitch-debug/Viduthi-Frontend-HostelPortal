@@ -3,7 +3,7 @@ services:
     name: vidudhi-hostel-portal
     env: node
     plan: free
-    buildCommand: cd hostel-frontend && npm install && npm run build && cd ../hostel-backend && npm install
+    buildCommand: cd hostel-frontend && npm install --include=dev && npm run build && cd ../hostel-backend && npm install
     startCommand: node hostel-backend/server.js
     envVars:
       - key: NODE_ENV

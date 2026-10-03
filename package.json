@@ -4,7 +4,7 @@
   "private": true,
   "description": "Vidudhi Hostel Resident Portal - Full Stack Unified Web App with MongoDB Atlas and Biometrics",
   "scripts": {
-    "build": "cd hostel-frontend && npm install && npm run build && cd ../hostel-backend && npm install",
+    "build": "cd hostel-frontend && npm install --include=dev && npm run build && cd ../hostel-backend && npm install",
     "start": "node hostel-backend/server.js"
   },
   "engines": {
