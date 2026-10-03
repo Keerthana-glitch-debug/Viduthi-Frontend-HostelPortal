@@ -145,13 +145,26 @@ export default function RealFaceIdScanner({
     }
   }, [])
 
-  // 4. Start Front Camera
+  // 4. Start Front Camera (reusing active stream if live)
   const startCamera = useCallback(async () => {
-    stopCameraStream()
     setCameraState('requesting')
-    setStatusMessage('Requesting front camera permission…')
+    setStatusMessage('Activating optical camera…')
 
     try {
+      // If we already have live camera tracks, attach directly
+      if (streamRef.current && streamRef.current.getVideoTracks().some((t) => t.readyState === 'live')) {
+        setCameraState('active')
+        setStatusMessage('Center your face in the optical viewfinder…')
+        if (videoRef.current) {
+          if (videoRef.current.srcObject !== streamRef.current) {
+            videoRef.current.srcObject = streamRef.current
+          }
+          await videoRef.current.play().catch(() => {})
+        }
+        return
+      }
+
+      // Otherwise acquire fresh media stream
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: 'user',
@@ -167,22 +180,42 @@ export default function RealFaceIdScanner({
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream
-        videoRef.current.play().catch(() => {})
+        await videoRef.current.play().catch(() => {})
       }
     } catch (err) {
       console.warn('Camera permission blocked or unavailable:', err)
       setCameraState('denied')
-      setStatusMessage('Camera access denied. Please allow camera permissions in your browser.')
+      setStatusMessage('Camera access denied or unavailable. Click "Turn On Camera" below to grant access.')
     }
-  }, [stopCameraStream])
+  }, [])
 
   // Start camera once models are ready
   useEffect(() => {
     if (modelsLoaded) {
       startCamera()
     }
-    return () => stopCameraStream()
-  }, [modelsLoaded, startCamera, stopCameraStream])
+    return () => {
+      // Only release on unmount
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop())
+        streamRef.current = null
+      }
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current)
+      }
+    }
+  }, [modelsLoaded, startCamera])
+
+  // Ensure video element always binds to stream when active
+  useEffect(() => {
+    if (cameraState === 'active' && videoRef.current && streamRef.current) {
+      if (videoRef.current.srcObject !== streamRef.current) {
+        videoRef.current.srcObject = streamRef.current
+      }
+      videoRef.current.play().catch(() => {})
+    }
+  }, [cameraState])
+
 
   // 5. Continuous 1:1 Biometric Verification & Facial Recognition Loop
   const detectAndMatchLoop = useCallback(async () => {
@@ -340,7 +373,15 @@ export default function RealFaceIdScanner({
       setMode('verify')
       setCameraState('active')
       setEnrollingInProgress(false)
-      setStatusMessage('✅ Face ID profile successfully registered in database! Now test verification.')
+      setStatusMessage('✅ Face ID registered in database! Now look directly at camera to verify.')
+
+      // Ensure video element continues playing smoothly
+      if (videoRef.current) {
+        if (streamRef.current && videoRef.current.srcObject !== streamRef.current) {
+          videoRef.current.srcObject = streamRef.current
+        }
+        videoRef.current.play().catch(() => {})
+      }
 
       if (onEnrolledSuccess) {
         onEnrolledSuccess(res.user)
@@ -416,8 +457,8 @@ export default function RealFaceIdScanner({
         </div>
       )}
 
-      {/* VIEWPORT 1: Live Front Camera with Real-Time FaceMesh Overlay */}
-      {modelsLoaded && cameraState === 'active' && (
+      {/* VIEWPORT: Live Front Camera with Real-Time FaceMesh Overlay */}
+      {modelsLoaded && cameraState !== 'verified' && (
         <div
           style={{
             position: 'relative',
@@ -436,6 +477,7 @@ export default function RealFaceIdScanner({
             playsInline
             autoPlay
             muted
+            onLoadedMetadata={() => videoRef.current?.play().catch(() => {})}
             style={{
               width: '100%',
               height: '100%',
@@ -459,19 +501,72 @@ export default function RealFaceIdScanner({
             }}
           />
 
+          {/* Camera Requesting Overlay */}
+          {cameraState === 'requesting' && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'rgba(0,0,0,0.85)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                color: '#38BDF8',
+                fontSize: 12,
+              }}
+            >
+              <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite' }} />
+              <span>Activating Camera…</span>
+            </div>
+          )}
+
+          {/* Camera Denied Overlay */}
+          {cameraState === 'denied' && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'rgba(0,0,0,0.92)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                padding: 12,
+                color: '#EF4444',
+                fontSize: 11,
+              }}
+            >
+              <CameraOff size={24} />
+              <span>Camera Blocked</span>
+              <button
+                type="button"
+                className="btn btn-xs btn-primary"
+                onClick={startCamera}
+                style={{ fontSize: 10, padding: '2px 8px' }}
+              >
+                Turn On Camera
+              </button>
+            </div>
+          )}
+
           {/* Animated Sweeping Laser Beam */}
-          <div
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              height: 3,
-              background: faceDetected ? '#22C55E' : '#38BDF8',
-              boxShadow: faceDetected ? '0 0 10px 2px #22C55E' : '0 0 10px 2px #38BDF8',
-              top: '45%',
-              animation: 'scanLineSweep 2s ease-in-out infinite alternate',
-            }}
-          />
+          {cameraState === 'active' && (
+            <div
+              style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                height: 3,
+                background: faceDetected ? '#22C55E' : '#38BDF8',
+                boxShadow: faceDetected ? '0 0 10px 2px #22C55E' : '0 0 10px 2px #38BDF8',
+                top: '45%',
+                animation: 'scanLineSweep 2s ease-in-out infinite alternate',
+              }}
+            />
+          )}
 
           {/* Target Oval Contour */}
           <div
@@ -486,34 +581,21 @@ export default function RealFaceIdScanner({
         </div>
       )}
 
-      {/* VIEWPORT 2: Camera Permission Blocked */}
-      {cameraState === 'denied' && (
-        <div
-          style={{
-            width: '100%',
-            padding: 16,
-            background: 'rgba(239, 68, 68, 0.08)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            borderRadius: 12,
-            marginBottom: 12,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 8,
-          }}
-        >
-          <CameraOff size={32} color="#EF4444" />
-          <strong style={{ fontSize: 13, color: '#EF4444' }}>Camera Access Required for Real Face ID</strong>
-          <p style={{ margin: 0, fontSize: 11.5, color: 'var(--text-muted)', maxWidth: 280 }}>
-            Real biometric face recognition requires live front-camera video to compute your 128-D facial vector.
-          </p>
-          <button type="button" className="btn btn-xs btn-primary" onClick={startCamera}>
-            <RefreshCw size={12} /> Grant Camera Permission
+      {/* Manual Turn On / Restart Camera Trigger */}
+      {modelsLoaded && cameraState !== 'verified' && (
+        <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+          <button
+            type="button"
+            className="btn btn-xs btn-ghost"
+            onClick={startCamera}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--text-muted)' }}
+          >
+            <Camera size={13} /> Turn On / Restart Camera
           </button>
         </div>
       )}
 
-      {/* VIEWPORT 3: Face Verified Successfully */}
+      {/* VIEWPORT 2: Face Verified Successfully */}
       {cameraState === 'verified' && capturedPhoto && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginBottom: 12 }}>
           <div

@@ -99,6 +99,21 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    fingerprintCredentialId: {
+      type: String,
+      default: null,
+    },
+    fingerprintProofHash: {
+      type: String,
+      default: null,
+    },
+    isFingerprintEnrolled: {
+      type: Boolean,
+      default: false,
+    },
+    fingerprintEnrolledAt: {
+      type: Date,
+    },
   },
   {
     timestamps: true,

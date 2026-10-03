@@ -4,4 +4,7 @@ node_modules
 dist
 */dist
 *.log
-
+cloudflared.exe
+*.txt
+.env
+*/.env

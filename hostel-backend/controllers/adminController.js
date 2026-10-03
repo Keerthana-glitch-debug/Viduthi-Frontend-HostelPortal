@@ -157,7 +157,7 @@ exports.createUser = async (req, res) => {
   }
 };
 
-// @desc    Update User
+// @desc    Update User (Profile details, room, rollNo, password reset, biometric reset)
 // @route   PATCH /api/admin/users/:id
 // @access  Private (Admin)
 exports.updateUser = async (req, res) => {
@@ -167,22 +167,84 @@ exports.updateUser = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found.' });
     }
 
-    const updates = req.body;
-    // Don't update password through this route
-    delete updates.password;
+    const {
+      name,
+      email,
+      role,
+      rollNo,
+      staffId,
+      roomNumber,
+      block,
+      department,
+      year,
+      phone,
+      isActive,
+      newPassword,
+      resetFaceId,
+      resetFingerprint,
+    } = req.body;
 
-    Object.assign(user, updates);
+    if (name !== undefined) user.name = name.trim();
+    if (email !== undefined) user.email = email.trim().toLowerCase();
+    if (role !== undefined) user.role = role;
+    if (rollNo !== undefined) user.rollNo = rollNo.trim();
+    if (staffId !== undefined) user.staffId = staffId.trim();
+    if (roomNumber !== undefined) user.roomNumber = roomNumber.trim();
+    if (block !== undefined) user.block = block.trim();
+    if (department !== undefined) user.department = department.trim();
+    if (year !== undefined) user.year = year.trim();
+    if (phone !== undefined) user.phone = phone.trim();
+    if (isActive !== undefined) user.isActive = Boolean(isActive);
+
+    // Password reset if requested by admin
+    if (newPassword && newPassword.trim().length >= 3) {
+      const bcrypt = require('bcryptjs');
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(newPassword.trim(), salt);
+    }
+
+    // Biometric reset controls
+    if (resetFaceId) {
+      user.faceDescriptor = null;
+      user.facePhoto = null;
+      user.isFaceEnrolled = false;
+      user.faceEnrolledAt = null;
+    }
+
+    if (resetFingerprint) {
+      user.fingerprintCredentialId = null;
+      user.fingerprintProofHash = null;
+      user.isFingerprintEnrolled = false;
+      user.fingerprintEnrolledAt = null;
+    }
+
     await user.save({ validateBeforeSave: false });
 
     res.status(200).json({
       success: true,
-      message: 'User updated successfully.',
-      user,
+      message: `User ${user.name} updated successfully in database.`,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        rollNo: user.rollNo,
+        staffId: user.staffId,
+        roomNumber: user.roomNumber,
+        block: user.block,
+        department: user.department,
+        year: user.year,
+        phone: user.phone,
+        isActive: user.isActive,
+        isFaceEnrolled: user.isFaceEnrolled,
+        isFingerprintEnrolled: user.isFingerprintEnrolled,
+      },
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 // @desc    Deactivate User
 // @route   DELETE /api/admin/users/:id

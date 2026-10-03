@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import {
   Users, UserPlus, Trash2, Search, ShieldCheck, DoorOpen,
   Filter, CheckCircle2, UserCog, ShieldAlert, Loader2, Download,
+  Edit3, ScanFace, Fingerprint, KeyRound, RefreshCw, XCircle, Check
 } from 'lucide-react'
 import { selectUsersList, addUser, removeUser, toggleUserStatus } from '../store/slices/usersSlice'
 import { selectAuth } from '../store/slices/authSlice'
@@ -23,6 +24,20 @@ export default function UserManagement() {
   const [roleFilter, setRoleFilter] = useState('All')
   const [showAddModal, setShowAddModal] = useState(false)
   const [deletingUser, setDeletingUser] = useState(null)
+  const [editingUser, setEditingUser] = useState(null)
+  const [editForm, setEditForm] = useState({
+    name: '',
+    email: '',
+    role: 'student',
+    rollNo: '',
+    department: '',
+    block: '',
+    roomNumber: '',
+    phone: '',
+    newPassword: '',
+    resetFaceId: false,
+    resetFingerprint: false,
+  })
 
   // Add User Form State
   const [newUser, setNewUser] = useState({
@@ -69,6 +84,11 @@ export default function UserManagement() {
             email: u.email,
             phone: u.phone || '—',
             status: u.isActive ? 'Active' : 'Deactivated',
+            isFaceEnrolled: Boolean(u.isFaceEnrolled),
+            isFingerprintEnrolled: Boolean(u.isFingerprintEnrolled),
+            faceEnrolledAt: u.faceEnrolledAt,
+            fingerprintEnrolledAt: u.fingerprintEnrolledAt,
+            facePhoto: u.facePhoto,
           }))
         )
       }
@@ -76,6 +96,63 @@ export default function UserManagement() {
       console.warn('Could not fetch from Atlas:', err)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleOpenEdit = (u) => {
+    setEditingUser(u)
+    setEditForm({
+      name: u.name,
+      email: u.email,
+      role: u.role,
+      rollNo: u.rollNo === '—' ? '' : u.rollNo,
+      department: u.department === 'General' ? '' : u.department,
+      block: u.block || 'A Block',
+      roomNumber: u.roomNumber === '—' ? '' : u.roomNumber,
+      phone: u.phone === '—' ? '' : u.phone,
+      newPassword: '',
+      resetFaceId: false,
+      resetFingerprint: false,
+    })
+  }
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault()
+    if (!editingUser) return
+    try {
+      const payload = {
+        name: editForm.name.trim(),
+        email: editForm.email.trim().toLowerCase(),
+        role: editForm.role,
+        department: editForm.department.trim(),
+        block: editForm.block.trim(),
+        roomNumber: editForm.roomNumber.trim(),
+        phone: editForm.phone.trim(),
+      }
+      if (editForm.role === 'student') {
+        payload.rollNo = editForm.rollNo.trim()
+      } else {
+        payload.staffId = editForm.rollNo.trim()
+      }
+      if (editForm.newPassword && editForm.newPassword.trim()) {
+        payload.newPassword = editForm.newPassword.trim()
+      }
+      if (editForm.resetFaceId) {
+        payload.resetFaceId = true
+      }
+      if (editForm.resetFingerprint) {
+        payload.resetFingerprint = true
+      }
+
+      const res = await api.patch(`/admin/users/${editingUser.id}`, payload)
+      if (res && res.success) {
+        dispatch(pushToast(`User ${editForm.name} updated successfully in MongoDB Atlas!`, 'ok'))
+        setEditingUser(null)
+        await loadUsersFromAtlas()
+      }
+    } catch (err) {
+      console.error('[Update User Error]', err)
+      dispatch(pushToast(err.message || 'Failed to update user', 'danger'))
     }
   }
 
@@ -245,6 +322,7 @@ export default function UserManagement() {
                 <th>Department / Unit</th>
                 <th>Block &amp; Room</th>
                 <th>Contact</th>
+                <th>Biometrics Proof</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -277,6 +355,42 @@ export default function UserManagement() {
                     <div style={{ color: 'var(--ink-faint)', fontSize: 11 }}>{u.email}</div>
                   </td>
                   <td>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          fontSize: 10.5,
+                          fontWeight: 600,
+                          padding: '2px 6px',
+                          borderRadius: 4,
+                          background: u.isFaceEnrolled ? 'rgba(34, 197, 94, 0.15)' : 'var(--surface-sunken)',
+                          color: u.isFaceEnrolled ? '#16A34A' : 'var(--ink-muted)',
+                          border: u.isFaceEnrolled ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid var(--line)',
+                        }}
+                      >
+                        <ScanFace size={11} /> {u.isFaceEnrolled ? 'Face Enrolled' : 'Face Pending'}
+                      </span>
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          fontSize: 10.5,
+                          fontWeight: 600,
+                          padding: '2px 6px',
+                          borderRadius: 4,
+                          background: u.isFingerprintEnrolled ? 'rgba(56, 189, 248, 0.15)' : 'var(--surface-sunken)',
+                          color: u.isFingerprintEnrolled ? '#0284C7' : 'var(--ink-muted)',
+                          border: u.isFingerprintEnrolled ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid var(--line)',
+                        }}
+                      >
+                        <Fingerprint size={11} /> {u.isFingerprintEnrolled ? 'Fingerprint Linked' : 'Fingerprint Pending'}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
                     <button
                       type="button"
                       onClick={() => dispatch(toggleUserStatus(u.id))}
@@ -287,17 +401,28 @@ export default function UserManagement() {
                     </button>
                   </td>
                   <td>
-                    {u.role !== 'admin' && (
+                    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                       <button
                         type="button"
                         className="btn btn-ghost btn-sm"
-                        style={{ color: '#DC2626', padding: '4px 8px' }}
-                        onClick={() => setDeletingUser(u)}
-                        title="Remove User"
+                        style={{ color: 'var(--accent-border)', padding: '4px 8px' }}
+                        onClick={() => handleOpenEdit(u)}
+                        title="Edit User Details in DB"
                       >
-                        <Trash2 size={13} />
+                        <Edit3 size={13} />
                       </button>
-                    )}
+                      {u.role !== 'admin' && (
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm"
+                          style={{ color: '#DC2626', padding: '4px 8px' }}
+                          onClick={() => setDeletingUser(u)}
+                          title="Remove User"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -412,6 +537,154 @@ export default function UserManagement() {
               <span style={{ fontSize: 11, color: 'var(--ink-muted)', marginTop: 2, display: 'block' }}>
                 This Gmail will be authorized in MongoDB Atlas for Google OAuth login.
               </span>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* EDIT USER MODAL */}
+      {editingUser && (
+        <Modal
+          title={`Edit User: ${editingUser.name}`}
+          subtitle={`Update profile, room, password, or biometrics for ID: ${editingUser.id}`}
+          onClose={() => setEditingUser(null)}
+          footer={
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, width: '100%' }}>
+              <button type="button" className="btn btn-ghost" onClick={() => setEditingUser(null)}>
+                Cancel
+              </button>
+              <button type="submit" form="edit-user-form" className="btn btn-primary">
+                Save Changes to Database
+              </button>
+            </div>
+          }
+        >
+          <form id="edit-user-form" onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div>
+              <label>Full Legal Name</label>
+              <input
+                type="text"
+                required
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: 12 }}>
+              <div style={{ flex: 1 }}>
+                <label>System Role</label>
+                <select
+                  value={editForm.role}
+                  onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                >
+                  <option value="student">Student</option>
+                  <option value="warden">Warden</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <div style={{ flex: 1 }}>
+                <label>{editForm.role === 'student' ? 'Roll / Register No.' : 'Staff ID'}</label>
+                <input
+                  type="text"
+                  required
+                  value={editForm.rollNo}
+                  onChange={(e) => setEditForm({ ...editForm, rollNo: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 12 }}>
+              <div style={{ flex: 1 }}>
+                <label>Block / Wing</label>
+                <input
+                  type="text"
+                  value={editForm.block}
+                  onChange={(e) => setEditForm({ ...editForm, block: e.target.value })}
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label>Room Number</label>
+                <input
+                  type="text"
+                  value={editForm.roomNumber}
+                  onChange={(e) => setEditForm({ ...editForm, roomNumber: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 12 }}>
+              <div style={{ flex: 1 }}>
+                <label>Department / Branch</label>
+                <input
+                  type="text"
+                  value={editForm.department}
+                  onChange={(e) => setEditForm({ ...editForm, department: e.target.value })}
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label>Contact Phone</label>
+                <input
+                  type="text"
+                  value={editForm.phone}
+                  onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label>Institutional Email / Login ID</label>
+              <input
+                type="email"
+                required
+                value={editForm.email}
+                onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+              />
+            </div>
+
+            {/* Password Reset Field */}
+            <div style={{ background: 'var(--surface-sunken)', padding: '12px', borderRadius: 8, border: '1px solid var(--line)' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}>
+                <KeyRound size={14} color="var(--accent-border)" /> Reset Password (Optional)
+              </label>
+              <input
+                type="password"
+                placeholder="Leave blank to keep current, or enter new password"
+                value={editForm.newPassword}
+                onChange={(e) => setEditForm({ ...editForm, newPassword: e.target.value })}
+                style={{ marginTop: 6 }}
+              />
+              <span style={{ fontSize: 11, color: 'var(--ink-muted)', marginTop: 4, display: 'block' }}>
+                Default initial password for students is 123.
+              </span>
+            </div>
+
+            {/* Biometric Controls */}
+            <div style={{ background: 'var(--surface-sunken)', padding: '12px', borderRadius: 8, border: '1px solid var(--line)' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600, marginBottom: 8 }}>
+                <ShieldCheck size={14} color="#16A34A" /> Biometric Proof Status &amp; Re-enrollment Controls
+              </label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13 }}>
+                  <input
+                    type="checkbox"
+                    checked={editForm.resetFaceId}
+                    onChange={(e) => setEditForm({ ...editForm, resetFaceId: e.target.checked })}
+                  />
+                  <span>
+                    Reset Face ID Proof (Current: <strong>{editingUser.isFaceEnrolled ? 'Enrolled in MongoDB' : 'Not Enrolled'}</strong>)
+                  </span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13 }}>
+                  <input
+                    type="checkbox"
+                    checked={editForm.resetFingerprint}
+                    onChange={(e) => setEditForm({ ...editForm, resetFingerprint: e.target.checked })}
+                  />
+                  <span>
+                    Reset Fingerprint Proof (Current: <strong>{editingUser.isFingerprintEnrolled ? 'Linked in MongoDB' : 'Not Linked'}</strong>)
+                  </span>
+                </label>
+              </div>
             </div>
           </form>
         </Modal>

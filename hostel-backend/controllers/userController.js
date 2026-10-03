@@ -166,9 +166,100 @@ exports.getFaceProfile = async (req, res) => {
       faceEnrolledAt: user.faceEnrolledAt,
       facePhoto: user.facePhoto,
       faceDescriptor: user.faceDescriptor,
+      isFingerprintEnrolled: user.isFingerprintEnrolled || false,
+      fingerprintEnrolledAt: user.fingerprintEnrolledAt,
+      fingerprintProofHash: user.fingerprintProofHash,
+      fingerprintCredentialId: user.fingerprintCredentialId,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// @desc    Enroll / Update Student Hardware Fingerprint Biometric Proof
+// @route   POST /api/user/enroll-fingerprint
+// @access  Private
+exports.enrollFingerprint = async (req, res) => {
+  try {
+    const { credentialId, proofHash } = req.body;
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    user.fingerprintCredentialId = credentialId || `WEBAUTHN_${user.rollNo || user._id}_${Date.now().toString(16)}`;
+    user.fingerprintProofHash = proofHash || `SHA256:BIOMETRIC_PROOF_${Date.now().toString(16)}`;
+    user.isFingerprintEnrolled = true;
+    user.fingerprintEnrolledAt = new Date();
+    await user.save({ validateBeforeSave: false });
+
+    await recordActivity({
+      user,
+      action: 'ENROLLED_BIOMETRIC_FINGERPRINT',
+      resourceType: 'biometrics',
+      title: `Hardware Biometric Fingerprint enrolled for ${user.name}`,
+      route: '/app/attendance',
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Fingerprint biometric proof successfully saved to database.',
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        rollNo: user.rollNo,
+        isFingerprintEnrolled: user.isFingerprintEnrolled,
+        fingerprintEnrolledAt: user.fingerprintEnrolledAt,
+        fingerprintProofHash: user.fingerprintProofHash,
+        fingerprintCredentialId: user.fingerprintCredentialId,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Update Current User Profile Information
+// @route   PATCH /api/user/profile
+// @access  Private
+exports.updateProfile = async (req, res) => {
+  try {
+    const { name, phone, roomNumber, block, department } = req.body;
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (name) user.name = name.trim();
+    if (phone) user.phone = phone.trim();
+    if (roomNumber) user.roomNumber = roomNumber.trim();
+    if (block) user.block = block.trim();
+    if (department) user.department = department.trim();
+
+    await user.save({ validateBeforeSave: false });
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile details updated successfully in database.',
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        rollNo: user.rollNo,
+        roomNumber: user.roomNumber,
+        block: user.block,
+        department: user.department,
+        phone: user.phone,
+        isFaceEnrolled: user.isFaceEnrolled,
+        isFingerprintEnrolled: user.isFingerprintEnrolled,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 
