@@ -49,6 +49,12 @@ const authSlice = createSlice({
     },
     logout: (state) => {
       state.isLoggedIn = false
+      try {
+        window.localStorage.removeItem('vidudhi:jwt_token')
+        window.localStorage.removeItem('vidudhi:user_role')
+      } catch {
+        /* no-op */
+      }
     },
     updateUserProfile: (state, action) => {
       const { role, updates } = action.payload

@@ -26,7 +26,7 @@ router.patch('/profile', protect, updateProfile);
 
 router.get('/oauth/config', (req, res) => {
   res.json({
-    clientId: process.env.GOOGLE_CLIENT_ID || '108249827391-vidudhi-portal-demo.apps.googleusercontent.com',
+    clientId: process.env.GOOGLE_CLIENT_ID || '953880868649-mopb50m92ocgpvm512va4kecm4slo96b.apps.googleusercontent.com',
   });
 });
 

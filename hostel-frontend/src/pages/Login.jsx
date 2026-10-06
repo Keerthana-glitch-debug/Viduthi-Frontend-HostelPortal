@@ -9,7 +9,6 @@ import {
   ShieldAlert,
   UserCog,
   AlertCircle,
-  Lock,
   UtensilsCrossed,
   HeartPulse,
 } from 'lucide-react'
@@ -110,45 +109,6 @@ export default function Login() {
       console.error('[Google Login Error]', err)
       const errorMsg =
         err.data?.message || err.message || 'Google account not authorized in database.'
-      setAuthError(errorMsg)
-      dispatch(pushToast(`Access Denied: ${errorMsg}`, 'danger'))
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // Direct Institutional Email Authentication (bypasses Google Origin Mismatch on Render)
-  const handleInstitutionalEmailLogin = async (emailToUse) => {
-    setIsLoading(true)
-    setAuthError(null)
-
-    const target = (emailToUse || identifier).trim().toLowerCase()
-    if (!target) {
-      setAuthError('Please enter your institutional email (e.g. 24104030@nec.edu.in) above.')
-      setIsLoading(false)
-      return
-    }
-
-    try {
-      const res = await api.post('/auth/google', {
-        email: target,
-      })
-
-      if (res && res.success && res.token) {
-        window.localStorage.setItem('vidudhi:jwt_token', res.token)
-        window.localStorage.setItem('vidudhi:user_role', res.user.role)
-
-        dispatch(updateUserProfile({ role: res.user.role, updates: res.user }))
-        dispatch(login(res.user.role))
-        dispatch(pushToast(`Welcome, ${res.user.name}! Verified with MongoDB Atlas.`, 'ok'))
-        navigate('/app')
-      } else {
-        throw new Error(res?.message || 'Access denied by database policy.')
-      }
-    } catch (err) {
-      console.error('[Institutional Login Error]', err)
-      const errorMsg =
-        err.data?.message || err.message || 'Account not registered in database.'
       setAuthError(errorMsg)
       dispatch(pushToast(`Access Denied: ${errorMsg}`, 'danger'))
     } finally {
@@ -323,14 +283,14 @@ export default function Login() {
                 required
                 placeholder={
                   role === 'student'
-                    ? 'e.g. 24104030 or 24104030@nec.edu.in'
+                    ? 'Enter Roll Number or Email'
                     : role === 'warden'
-                    ? 'e.g. WRD-1001 or keerthana020706@gmail.com'
+                    ? 'Enter Staff ID or Email'
                     : role === 'admin'
-                    ? 'e.g. ADM-0001 or admin.venkatesh@vidudhi.edu'
+                    ? 'Enter Admin ID or Email'
                     : role === 'mess_manager'
-                    ? 'e.g. MESS-101 or muthumari@vidudhi.edu'
-                    : 'e.g. DOC-201 or doctor.madhu@vidudhi.edu'
+                    ? 'Enter Mess Staff ID or Email'
+                    : 'Enter Doctor ID or Email'
                 }
                 value={identifier}
                 onChange={(e) => { setIdentifier(e.target.value); setAuthError(null); }}
@@ -342,7 +302,7 @@ export default function Login() {
               <input
                 type="password"
                 required
-                placeholder="••••••••"
+                placeholder="Enter your password"
                 value={password}
                 onChange={(e) => { setPassword(e.target.value); setAuthError(null); }}
               />
@@ -371,112 +331,6 @@ export default function Login() {
                 width: '100%',
               }}
             />
-
-            {/* Direct Institutional Login (Instant MongoDB Atlas Auth) */}
-            <button
-              type="button"
-              onClick={() =>
-                handleInstitutionalEmailLogin(
-                  identifier ||
-                    (role === 'warden'
-                      ? 'keerthana020706@gmail.com'
-                      : role === 'admin'
-                      ? 'admin.venkatesh@vidudhi.edu'
-                      : '24104030@nec.edu.in')
-                )
-              }
-              disabled={isLoading}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                width: '100%',
-                padding: '10px 14px',
-                borderRadius: 8,
-                border: '1px solid var(--accent-border, rgba(124, 252, 0, 0.4))',
-                background: 'rgba(124, 252, 0, 0.08)',
-                color: 'var(--ink)',
-                fontSize: 12.5,
-                fontWeight: 600,
-                cursor: 'pointer',
-                marginTop: 8,
-                transition: 'all 0.2s ease',
-              }}
-            >
-              <ShieldCheck size={16} style={{ color: 'var(--accent, #7CFC00)' }} />
-              <span>
-                {identifier
-                  ? `Sign In as ${identifier}`
-                  : role === 'warden'
-                  ? 'Sign In as keerthana020706@gmail.com (Warden)'
-                  : role === 'admin'
-                  ? 'Sign In as admin.venkatesh@vidudhi.edu'
-                  : 'Instant Sign In as 24104030@nec.edu.in (Keerthana)'}
-              </span>
-            </button>
-
-            {/* Registered Account Quick Fill */}
-            <div style={{ marginTop: 12 }}>
-              <div style={{ fontSize: 11, color: 'var(--ink-muted)', marginBottom: 6, fontWeight: 500 }}>
-                Verified Accounts (Click to auto-fill · Password: <code>123</code>):
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {[
-                  { label: 'Keerthana (24104030)', email: '24104030@nec.edu.in', role: 'student' },
-                  { label: 'Warden (Jeyanthi)', email: 'keerthana020706@gmail.com', role: 'warden' },
-                  { label: 'Admin (Prof. Venkatesh)', email: 'admin.venkatesh@vidudhi.edu', role: 'admin' },
-                  { label: 'Karthika (24104052)', email: '24104052@nec.edu.in', role: 'student' },
-                  { label: 'Renuka (24104022)', email: '24104022@nec.edu.in', role: 'student' },
-                ].map((acc) => (
-                  <button
-                    key={acc.email}
-                    type="button"
-                    onClick={() => {
-                      setRole(acc.role)
-                      setIdentifier(acc.email)
-                      setPassword('123')
-                      setAuthError(null)
-                    }}
-                    style={{
-                      background: 'var(--surface-2, rgba(255,255,255,0.05))',
-                      border: '1px solid var(--line, rgba(255,255,255,0.1))',
-                      borderRadius: 6,
-                      padding: '4px 8px',
-                      fontSize: 11,
-                      color: 'var(--ink-muted)',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease',
-                    }}
-                    title={`Click to fill ${acc.email} (default password: 123)`}
-                  >
-                    {acc.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Security notice regarding closed self-registration */}
-            <div
-              style={{
-                marginTop: 14,
-                padding: '10px 12px',
-                background: 'var(--surface-2)',
-                borderRadius: 8,
-                border: '1px solid var(--line)',
-                fontSize: 11.5,
-                color: 'var(--ink-muted)',
-                lineHeight: 1.4,
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: 8,
-              }}
-            >
-              <Lock size={14} style={{ flexShrink: 0, marginTop: 2, color: 'var(--ink-soft)' }} />
-              <div>
-                <strong>Notice:</strong> Self-registration is disabled. New resident accounts are provisioned exclusively by the <strong>Hostel Warden</strong> or <strong>Administrator</strong>.
-              </div>
-            </div>
           </form>
         </div>
 

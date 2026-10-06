@@ -333,7 +333,7 @@ export default function AttendancePage() {
                     dispatch(resetStudentCheckin(studentRoll))
                     setScanState('idle')
                     setScanProgress(0)
-                    dispatch(pushToast('Attendance state reset for re-verification demonstration.', 'info'))
+                    dispatch(pushToast('Attendance state reset for re-verification.', 'info'))
                   }}
                 >
                   <RefreshCw size={14} /> Re-verify Attendance

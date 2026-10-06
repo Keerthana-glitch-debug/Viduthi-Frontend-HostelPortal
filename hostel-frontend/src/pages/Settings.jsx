@@ -260,36 +260,17 @@ export default function Settings() {
                 <Lock size={15} style={{ verticalAlign: -2, marginRight: 6, color: 'var(--accent-border)' }} />
                 Security &amp; Change Password
               </h3>
-              <p>Default password provided by staff on initial admission is <strong>123</strong>. You can update to your private password here.</p>
+              <p>Update your account password securely.</p>
             </div>
           </div>
 
           <form onSubmit={handlePasswordChange} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div
-              style={{
-                background: 'rgba(34, 197, 94, 0.08)',
-                border: '1px solid var(--accent-border)',
-                borderRadius: 8,
-                padding: '10px 14px',
-                fontSize: 12.5,
-                color: 'var(--ink)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
-            >
-              <KeyRound size={16} color="var(--accent-border)" style={{ flexShrink: 0 }} />
-              <div>
-                <strong>First-Time Login Note:</strong> Initial student accounts are issued by staff with default password <code>123</code>. Update it here anytime.
-              </div>
-            </div>
-
             <div>
               <label>Current Password</label>
               <input
                 type="password"
                 required
-                placeholder="Enter current password (default: 123)"
+                placeholder="Enter current password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
               />
@@ -360,7 +341,7 @@ export default function Settings() {
             <div className="settings-row">
               <div>
                 <div className="settings-row-title">Data Hygiene &amp; Cache</div>
-                <p className="settings-row-desc">Reset temporary mock operational cache and reload default registry records.</p>
+                <p className="settings-row-desc">Clear offline operational cache and synchronize local records.</p>
               </div>
               <button
                 type="button"

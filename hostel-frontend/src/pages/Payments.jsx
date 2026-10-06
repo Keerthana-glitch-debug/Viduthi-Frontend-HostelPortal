@@ -478,16 +478,16 @@ export default function Payments() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <div>
                   <label>Card Number</label>
-                  <input type="text" placeholder="4111 •••• •••• 4242" defaultValue="4111 2345 6789 4242" />
+                  <input type="text" placeholder="4111 •••• •••• 4242" />
                 </div>
                 <div style={{ display: 'flex', gap: 10 }}>
                   <div style={{ flex: 1 }}>
                     <label>Expiry Date</label>
-                    <input type="text" placeholder="MM/YY" defaultValue="08/28" />
+                    <input type="text" placeholder="MM/YY" />
                   </div>
                   <div style={{ flex: 1 }}>
                     <label>CVV</label>
-                    <input type="password" placeholder="•••" defaultValue="123" />
+                    <input type="password" placeholder="•••" />
                   </div>
                 </div>
               </div>

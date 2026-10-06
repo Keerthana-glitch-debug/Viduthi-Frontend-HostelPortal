@@ -653,9 +653,6 @@ export default function UserManagement() {
                 onChange={(e) => setEditForm({ ...editForm, newPassword: e.target.value })}
                 style={{ marginTop: 6 }}
               />
-              <span style={{ fontSize: 11, color: 'var(--ink-muted)', marginTop: 4, display: 'block' }}>
-                Default initial password for students is 123.
-              </span>
             </div>
 
             {/* Biometric Controls */}

@@ -379,7 +379,7 @@ exports.changePassword = async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({
         success: false,
-        message: 'Current password is incorrect. Default password for first-time login is 123.',
+        message: 'Current password is incorrect.',
       });
     }
 
