@@ -35,7 +35,7 @@ const ACCENT_OPTIONS = [
 const BACKGROUND_OPTIONS = [
   { id: 'none', label: 'Clean / None', icon: Circle },
   { id: 'bubbles', label: 'Soft Bubbles', icon: Wand2 },
-  { id: 'pawprints', label: 'Subtle Geometry', icon: PawPrint },
+  { id: 'pawprints', label: 'Paw Design', icon: PawPrint },
 ]
 
 export default function Settings() {
