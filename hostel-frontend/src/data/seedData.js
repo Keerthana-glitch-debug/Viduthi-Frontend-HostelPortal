@@ -765,7 +765,7 @@ export const initialAdminUsersDirectory = [
 ]
 
 
-// What-If Simulation Presets (Warden Only)
+// What-If Simulation Presets (Warden & Admin Operations)
 export const simulationPresets = [
   {
     id: 'exam_surge',
@@ -775,37 +775,37 @@ export const simulationPresets = [
     messDemandIndex: 115,
     laundryWeeklyCycles: 3,
     utilityInflationPercent: 12,
-    contingencyFund: 150000,
+    contingencyFund: 25000,
   },
   {
     id: 'monsoon_spike',
-    name: 'Monsoon Flooding & Heavy Load',
-    description: 'Simulates monsoon season: 100% occupancy with drying racks, power generator diesel costs, and hot water water-heater demand.',
+    name: 'Monsoon Heavy Weather & Grid Fluctuation',
+    description: 'Simulates monsoon season: 100% occupancy with indoor clothes drying, diesel generator backup for borewell pumping, and geyser hot water.',
     occupancyRate: 100,
     messDemandIndex: 105,
     laundryWeeklyCycles: 5,
-    utilityInflationPercent: 25,
-    contingencyFund: 300000,
+    utilityInflationPercent: 20,
+    contingencyFund: 45000,
   },
   {
     id: 'festival_feast',
     name: 'Pongal / Diwali Festival Week',
-    description: 'Lower residential occupancy (65%) with high special feast banquet costs and kitchen overtime operations.',
+    description: 'Lower residential occupancy (65%) with special Sunday feast sweet payasam, vadai, and kitchen holiday operations.',
     occupancyRate: 65,
     messDemandIndex: 130,
     laundryWeeklyCycles: 2,
     utilityInflationPercent: 8,
-    contingencyFund: 80000,
+    contingencyFund: 18000,
   },
   {
     id: 'eco_green',
     name: 'Eco-Friendly Zero Waste Campus Target',
-    description: 'Models solar-powered energy cap, optimized batch laundry runs, and balanced nutrition waste control.',
+    description: 'Models solar-powered energy cap, daytime fan conservation, and balanced South Indian diet waste minimization.',
     occupancyRate: 92,
     messDemandIndex: 95,
     laundryWeeklyCycles: 2,
     utilityInflationPercent: -5,
-    contingencyFund: 50000,
+    contingencyFund: 10000,
   },
 ]
 

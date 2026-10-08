@@ -14,14 +14,15 @@ export default function SimulationEngine() {
   const [copied, setCopied] = useState(false)
 
   // Hostel Scenario Parameters (Simple real-world sliders for Warden)
+  // Hostel Scenario Parameters (Simple real-world sliders for Campus Warden & Admin)
   const [residents, setResidents] = useState(395) // 50 to 500 students
   const [ambientTemp, setAmbientTemp] = useState(32) // 22 to 44°C
   const [examStressIndex, setExamStressIndex] = useState(30) // 0 to 100%
-  const [municipalWaterInflow, setMunicipalWaterInflow] = useState(25000) // 0 to 60,000 Litres
+  const [waterSupplyInflow, setWaterSupplyInflow] = useState(28000) // 0 to 50,000 Litres (Borewells & campus supply)
   const [mealDemandFactor, setMealDemandFactor] = useState(100) // 50% to 150%
-  const [coolingActiveRatio, setCoolingActiveRatio] = useState(65) // 20% to 100%
+  const [coolingActiveRatio, setCoolingActiveRatio] = useState(60) // 20% to 100% (Ceiling fans & ventilation)
 
-  // Real-time Hostel Forecasting Calculation
+  // Real-time Hostel Forecasting Calculation — Calibrated for Rural College Campus
   const forecast = useMemo(() => {
     // Capacity normalization
     const normResidents = residents / 430
@@ -30,18 +31,23 @@ export default function SimulationEngine() {
     const normMeal = mealDemandFactor / 100
     const normCooling = coolingActiveRatio / 100
 
-    // 1. Peak Electrical Load (kW):
-    const thermalCoolingLoad = 85 * Math.pow(normTemp, 1.6) * normCooling
-    const baseResidentPower = 70 * normResidents
-    const examNightLighting = 25 * normStress * normResidents
-    const predictedPowerKW = Math.round((55 + baseResidentPower + thermalCoolingLoad + examNightLighting) * 10) / 10
+    // 1. Peak Electrical Load (kW) for Rural College Hostel:
+    // Base load (RO filtration plant, borewell pumps, kitchen wet grinders, corridor LEDs): ~8.5 kW
+    // Student room lighting & laptops: ~8.0 * normResidents kW
+    // Ceiling fans in hot weather: ~8.5 * Math.pow(Math.max(0, normTemp), 1.4) * normCooling kW
+    // Night study lighting in exams: ~2.5 * normStress * normResidents kW
+    const thermalCoolingLoad = 8.5 * Math.pow(Math.max(0, normTemp), 1.4) * normCooling
+    const baseResidentPower = 8.0 * normResidents
+    const examNightLighting = 2.5 * normStress * normResidents
+    const predictedPowerKW = Math.round((8.5 + baseResidentPower + thermalCoolingLoad + examNightLighting) * 10) / 10
 
-    // 2. Daily Water Depletion Modeling:
-    const perCapitaWater = 110 + (normTemp * 45) + (normStress * 12)
+    // 2. Daily Water Depletion Modeling (Rural Campus):
+    // Standard rural per-capita usage: 65 - 85 Litres/day
+    const perCapitaWater = 65 + (normTemp * 20) + (normStress * 6)
     const totalDailyWaterLiters = Math.round(residents * perCapitaWater)
     const netWaterHourlyDrawdown = Math.round(totalDailyWaterLiters / 16)
-    const netHourlyDepletion = Math.max(0, netWaterHourlyDrawdown - (municipalWaterInflow / 16))
-    const reservoirVolume = 65000
+    const netHourlyDepletion = Math.max(0, netWaterHourlyDrawdown - (waterSupplyInflow / 16))
+    const reservoirVolume = 45000 // Overhead campus tank capacity in Litres
     const hoursUntilDry = netHourlyDepletion > 0
       ? Math.round((reservoirVolume / netHourlyDepletion) * 10) / 10
       : 99.9
@@ -52,24 +58,29 @@ export default function SimulationEngine() {
     const plannedMeals = Math.round(430 * 0.92)
     const mealVariance = expectedDiners - plannedMeals
     const wasteProbabilityPct = mealVariance < 0
-      ? Math.min(28, Math.round(Math.abs(mealVariance) / plannedMeals * 100 * 1.5))
-      : Math.max(2, Math.round(4 - (mealVariance / plannedMeals * 10)))
+      ? Math.min(24, Math.round(Math.abs(mealVariance) / plannedMeals * 100 * 1.4))
+      : Math.max(2, Math.round(4 - (mealVariance / plannedMeals * 8)))
 
-    // 4. Financial Cost Estimation:
-    const powerUnitCost = predictedPowerKW * 12 * 9.5
-    const waterTankerCost = hoursUntilDry < 12 ? Math.round((65000 - municipalWaterInflow) / 12000) * 1650 : 0
-    const foodDailyCost = expectedDiners * 145 * normMeal
-    const predictedDailyExpenseINR = Math.round(powerUnitCost + waterTankerCost + foodDailyCost + 8500)
+    // 4. Financial Cost Estimation (Rural Educational Tariff & Catering):
+    // TANGEDCO educational tariff: ~₹7.20 / unit for ~12 operating hours
+    const powerUnitCost = Math.round(predictedPowerKW * 12 * 7.20)
+    // Water tanker in rural Kovilpatti: ₹950 per 10,000L tanker
+    const waterTankerCost = hoursUntilDry < 12 ? Math.round((45000 - waterSupplyInflow) / 10000) * 950 : 0
+    // Institutional 3-meal + tea catering rate: ~₹76 / student / day
+    const foodCostPerHead = 76 * normMeal
+    const foodDailyCost = Math.round(expectedDiners * foodCostPerHead)
+    // Institutional sanitation, commercial LPG, and facility overhead: ₹1,600 / day
+    const predictedDailyExpenseINR = Math.round(powerUnitCost + waterTankerCost + foodDailyCost + 1600)
 
-    // 5. 24-Hour Horizon Hourly Demand Profile
+    // 5. 24-Hour Horizon Hourly Demand Profile (kW scaled for rural 40 kVA grid)
     const hourlyCurve = Array.from({ length: 24 }).map((_, hour) => {
-      let timeMultiplier = 0.4
+      let timeMultiplier = 0.45
       if (hour >= 6 && hour <= 9) timeMultiplier = 0.85
-      else if (hour >= 10 && hour <= 16) timeMultiplier = 0.70 + (normTemp * 0.35)
-      else if (hour >= 17 && hour <= 21) timeMultiplier = 0.92
-      else if (hour >= 22 || hour <= 1) timeMultiplier = 0.55 + (normStress * 0.30)
+      else if (hour >= 10 && hour <= 16) timeMultiplier = 0.70 + (normTemp * 0.25)
+      else if (hour >= 17 && hour <= 21) timeMultiplier = 0.95
+      else if (hour >= 22 || hour <= 1) timeMultiplier = 0.55 + (normStress * 0.25)
 
-      const baselineKW = Math.round(145 * timeMultiplier)
+      const baselineKW = Math.round(18 * timeMultiplier)
       const simulatedKW = Math.round(predictedPowerKW * timeMultiplier)
       return { hour, baselineKW, simulatedKW }
     })
@@ -84,7 +95,7 @@ export default function SimulationEngine() {
       predictedDailyExpenseINR,
       hourlyCurve,
     }
-  }, [residents, ambientTemp, examStressIndex, municipalWaterInflow, mealDemandFactor, coolingActiveRatio])
+  }, [residents, ambientTemp, examStressIndex, waterSupplyInflow, mealDemandFactor, coolingActiveRatio])
 
   // Trigger Forecast Recalculation Button
   const handlePredictNeeds = () => {
@@ -93,7 +104,7 @@ export default function SimulationEngine() {
       setIsPredicting(false)
       dispatch(
         pushToast({
-          message: `Forecast updated! Power needed: ${forecast.predictedPowerKW} kW, Mess: ${forecast.expectedDiners} plates.`,
+          message: `Forecast updated! Power needed: ${forecast.predictedPowerKW} kW, Mess: ${forecast.expectedDiners} plates, Cost: ₹${forecast.predictedDailyExpenseINR.toLocaleString()}.`,
           tone: 'ok',
         })
       )
@@ -105,13 +116,13 @@ export default function SimulationEngine() {
     setResidents(395)
     setAmbientTemp(30)
     setExamStressIndex(30)
-    setMunicipalWaterInflow(25000)
+    setWaterSupplyInflow(28000)
     setMealDemandFactor(100)
     setCoolingActiveRatio(60)
     dispatch(pushToast({ message: 'Hostel conditions reset to standard working day.', tone: 'info' }))
   }
 
-  // Copy Clean Summary for Warden's Daily Log / WhatsApp
+  // Copy Clean Summary for Warden's & Admin Daily Log / WhatsApp
   const handleCopySummary = () => {
     const summaryText = `=== VIDUDHI HOSTEL DAILY FORECAST & RESOURCE PLAN ===
 Date: ${new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}
@@ -120,20 +131,20 @@ Date: ${new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric
 • Students Staying in Hostel: ${residents} Students
 • Weather / Temperature: ${ambientTemp}°C (${ambientTemp >= 38 ? 'Extreme Heat' : ambientTemp >= 32 ? 'Warm Summer' : 'Pleasant / Mild'})
 • Exam / Academic Period: ${examStressIndex >= 80 ? 'Final Exam Week' : examStressIndex >= 40 ? 'Mid-Term Tests' : 'Regular Classes'}
-• Town Water Inflow: ${municipalWaterInflow.toLocaleString()} Litres
+• Borewell & Campus Water Supply: ${waterSupplyInflow.toLocaleString()} Litres
 • Mess Menu Type: ${mealDemandFactor > 120 ? 'Special Festival Feast' : mealDemandFactor < 80 ? 'Light Holiday' : 'Regular Menu'}
-• Fans & AC Usage: ${coolingActiveRatio}%
+• Ceiling Fans & Ventilation Usage: ${coolingActiveRatio}%
 
 [ESTIMATED REQUIREMENTS FOR TODAY]
-• Electricity Needed: ${forecast.predictedPowerKW} kW ${forecast.predictedPowerKW > 200 ? '(High Load Alert!)' : '(Normal Range)'}
+• Electricity Needed: ${forecast.predictedPowerKW} kW ${forecast.predictedPowerKW > 28 ? '(High Load Alert!)' : '(Normal Safe Range)'}
 • Daily Water Needed: ${forecast.totalDailyWaterLiters.toLocaleString()} Litres
 • Water Storage Status: ${forecast.hoursUntilDry >= 90 ? 'Continuous Safe Reserve' : `${forecast.hoursUntilDry} Hours Left`}
 • Mess Meals to Cook: ${forecast.expectedDiners} Plates (Expected Food Waste: ${forecast.wasteProbabilityPct}%)
 • Estimated Total Daily Cost: ₹${forecast.predictedDailyExpenseINR.toLocaleString()}
 
-[RECOMMENDED ACTION FOR WARDEN]
-${forecast.hoursUntilDry < 14 ? '⚠️ Order Water Tanker: Storage will run low in ' + forecast.hoursUntilDry + ' hours.' : '✓ Water supply is sufficient today.'}
-${forecast.predictedPowerKW > 200 ? '⚠️ High Power Load: Advise students to switch off unnecessary room heaters.' : '✓ Electrical load is within safe limits.'}
+[RECOMMENDED ACTION FOR WARDEN & ADMIN]
+${forecast.hoursUntilDry < 14 ? '⚠️ Order Water Tanker: Storage will run low in ' + forecast.hoursUntilDry + ' hours.' : '✓ Campus borewell water supply is sufficient today.'}
+${forecast.predictedPowerKW > 28 ? '⚠️ High Power Load: Advise students to switch off unoccupied room fans, unauthorized heavy immersion water heaters, and corridor tube lights.' : '✓ Electrical load is safely within transformer limits.'}
 💡 Mess Cook: Prepare food for exactly ${forecast.expectedDiners} students.`
 
     navigator.clipboard.writeText(summaryText).then(() => {
@@ -142,6 +153,7 @@ ${forecast.predictedPowerKW > 200 ? '⚠️ High Power Load: Advise students to 
       setTimeout(() => setCopied(false), 2500)
     })
   }
+
 
   return (
     <div className="page" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -279,30 +291,30 @@ ${forecast.predictedPowerKW > 200 ? '⚠️ High Power Load: Advise students to 
               </div>
             </div>
 
-            {/* Condition 4: Municipal Water Inflow */}
+            {/* Condition 4: Water Supply Inflow */}
             <div style={{ background: 'var(--surface-2)', padding: '12px 14px', borderRadius: 10 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 <label style={{ fontWeight: 700, fontSize: '0.88rem', margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: 6 }}>
                   <Droplets size={15} color="#0284C7" />
-                  Water Supply Inflow (Town / Borewell)
+                  Water Supply Inflow (Campus Borewells / Town)
                 </label>
-                <span className="mono" style={{ fontSize: '0.92rem', fontWeight: 800, color: municipalWaterInflow === 0 ? '#DC2626' : '#059669' }}>
-                  {municipalWaterInflow.toLocaleString()} Litres {municipalWaterInflow === 0 ? '(Supply Cut!)' : '/ Day'}
+                <span className="mono" style={{ fontSize: '0.92rem', fontWeight: 800, color: waterSupplyInflow === 0 ? '#DC2626' : '#059669' }}>
+                  {waterSupplyInflow.toLocaleString()} Litres {waterSupplyInflow === 0 ? '(Supply Cut!)' : '/ Day'}
                 </span>
               </div>
               <input
                 type="range"
                 min={0}
-                max={60000}
-                step={5000}
-                value={municipalWaterInflow}
-                onChange={(e) => setMunicipalWaterInflow(Number(e.target.value))}
+                max={50000}
+                step={2500}
+                value={waterSupplyInflow}
+                onChange={(e) => setWaterSupplyInflow(Number(e.target.value))}
                 style={{ width: '100%', accentColor: '#0284C7', cursor: 'pointer' }}
               />
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--ink-faint)', marginTop: 4 }}>
-                <span>No Water (0 L)</span>
-                <span>Normal Supply (25k L)</span>
-                <span>Full Borewell (60k L)</span>
+                <span>Supply Low (0 L)</span>
+                <span>Normal Supply (28k L)</span>
+                <span>Full Borewells (50k L)</span>
               </div>
             </div>
 
@@ -333,12 +345,12 @@ ${forecast.predictedPowerKW > 200 ? '⚠️ High Power Load: Advise students to 
               </div>
             </div>
 
-            {/* Condition 6: AC & Fan Usage */}
+            {/* Condition 6: Ceiling Fans & Ventilation */}
             <div style={{ background: 'var(--surface-2)', padding: '12px 14px', borderRadius: 10 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 <label style={{ fontWeight: 700, fontSize: '0.88rem', margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: 6 }}>
                   <Zap size={15} color="#7C3AED" />
-                  Fans &amp; Cooler Usage Level
+                  Ceiling Fans &amp; Ventilation Load
                 </label>
                 <span className="mono" style={{ fontSize: '0.92rem', fontWeight: 800, color: '#7C3AED' }}>
                   {coolingActiveRatio}% Usage
@@ -356,7 +368,7 @@ ${forecast.predictedPowerKW > 200 ? '⚠️ High Power Load: Advise students to 
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--ink-faint)', marginTop: 4 }}>
                 <span>Eco Mode (20%)</span>
                 <span>Normal (60%)</span>
-                <span>Peak Summer (100%)</span>
+                <span>Peak Summer Heat (100%)</span>
               </div>
             </div>
 
@@ -388,8 +400,8 @@ ${forecast.predictedPowerKW > 200 ? '⚠️ High Power Load: Advise students to 
               <div className="mono" style={{ fontSize: '1.6rem', fontWeight: 800, marginTop: 6, color: 'var(--text-main)' }}>
                 {forecast.predictedPowerKW} kW
               </div>
-              <div style={{ fontSize: '0.78rem', color: forecast.predictedPowerKW > 200 ? '#DC2626' : '#059669', marginTop: 4, fontWeight: 600 }}>
-                {forecast.predictedPowerKW > 200 ? '⚠️ High Load Expected' : '✓ Normal Safe Load'}
+              <div style={{ fontSize: '0.78rem', color: forecast.predictedPowerKW > 28 ? '#DC2626' : '#059669', marginTop: 4, fontWeight: 600 }}>
+                {forecast.predictedPowerKW > 28 ? '⚠️ High Load Alert (>28 kW)' : '✓ Normal Safe Load'}
               </div>
             </div>
 
@@ -445,7 +457,7 @@ ${forecast.predictedPowerKW > 200 ? '⚠️ High Power Load: Advise students to 
                 ₹{forecast.predictedDailyExpenseINR.toLocaleString()}
               </div>
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 4 }}>
-                Power, water &amp; groceries combined
+                Rural power tariff, borewell &amp; mess catering
               </div>
             </div>
           </div>
@@ -485,7 +497,7 @@ ${forecast.predictedPowerKW > 200 ? '⚠️ High Power Load: Advise students to 
                 <path
                   d={forecast.hourlyCurve.reduce((acc, pt, i) => {
                     const x = (i / 23) * 240
-                    const y = 80 - (pt.baselineKW / 250) * 75
+                    const y = 80 - (pt.baselineKW / 35) * 75
                     return `${acc} ${i === 0 ? 'M' : 'L'} ${x} ${y}`
                   }, '')}
                   fill="none"
@@ -499,7 +511,7 @@ ${forecast.predictedPowerKW > 200 ? '⚠️ High Power Load: Advise students to 
                   d={
                     forecast.hourlyCurve.reduce((acc, pt, i) => {
                       const x = (i / 23) * 240
-                      const y = 80 - (pt.simulatedKW / 250) * 75
+                      const y = 80 - (pt.simulatedKW / 35) * 75
                       return `${acc} ${i === 0 ? 'M' : 'L'} ${x} ${y}`
                     }, '') + ' L 240 80 L 0 80 Z'
                   }
@@ -510,7 +522,7 @@ ${forecast.predictedPowerKW > 200 ? '⚠️ High Power Load: Advise students to 
                 <path
                   d={forecast.hourlyCurve.reduce((acc, pt, i) => {
                     const x = (i / 23) * 240
-                    const y = 80 - (pt.simulatedKW / 250) * 75
+                    const y = 80 - (pt.simulatedKW / 35) * 75
                     return `${acc} ${i === 0 ? 'M' : 'L'} ${x} ${y}`
                   }, '')}
                   fill="none"
@@ -529,30 +541,30 @@ ${forecast.predictedPowerKW > 200 ? '⚠️ High Power Load: Advise students to 
             </div>
           </div>
 
-          {/* WARDEN'S RECOMMENDED ACTIONS FOR TODAY */}
+          {/* WARDEN'S & ADMIN'S RECOMMENDED ACTIONS FOR TODAY */}
           <div className="panel" style={{ background: 'var(--surface)', border: '1.5px solid var(--line)', padding: 18 }}>
             <h4 style={{ margin: '0 0 12px', fontSize: '0.98rem', display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-main)' }}>
               <ShieldCheck size={18} color="#059669" />
-              Warden's Checklist for Today
+              Warden &amp; Administration Checklist for Today
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {forecast.hoursUntilDry < 14 ? (
                 <div style={{ fontSize: '0.85rem', color: '#DC2626', background: '#FEF2F2', padding: '8px 12px', borderRadius: 8, borderLeft: '4px solid #DC2626' }}>
-                  ⚠️ <strong>Order Water Tanker:</strong> Storage will drop below 20% in {forecast.hoursUntilDry} hours. Call the municipal tanker vendor before 2:00 PM.
+                  ⚠️ <strong>Order Water Tanker:</strong> Campus storage will drop below 20% in {forecast.hoursUntilDry} hours. Call the local tanker vendor before 2:00 PM.
                 </div>
               ) : (
                 <div style={{ fontSize: '0.85rem', color: '#059669', background: '#ECFDF5', padding: '8px 12px', borderRadius: 8, borderLeft: '4px solid #10B981' }}>
-                  ✓ <strong>Water Reserve is Safe:</strong> Inflow from town supply is sufficient for all {residents} residents.
+                  ✓ <strong>Water Reserve is Safe:</strong> Campus borewell inflow is sufficient for all {residents} residents.
                 </div>
               )}
 
-              {forecast.predictedPowerKW > 200 ? (
+              {forecast.predictedPowerKW > 28 ? (
                 <div style={{ fontSize: '0.85rem', color: '#D97706', background: '#FFFBEB', padding: '8px 12px', borderRadius: 8, borderLeft: '4px solid #F59E0B' }}>
-                  ⚠️ <strong>High Electricity Load:</strong> Peak power will reach {forecast.predictedPowerKW} kW. Advise students to switch off unused room heaters to prevent circuit tripping.
+                  ⚠️ <strong>High Electricity Load:</strong> Peak power will reach {forecast.predictedPowerKW} kW. Advise students to switch off unoccupied room fans, unauthorized heavy immersion water heaters, and corridor lights.
                 </div>
               ) : (
                 <div style={{ fontSize: '0.85rem', color: '#059669', background: '#ECFDF5', padding: '8px 12px', borderRadius: 8, borderLeft: '4px solid #10B981' }}>
-                  ✓ <strong>Power Grid is Optimal:</strong> Electricity load is safely within hostel transformer limits.
+                  ✓ <strong>Rural Power Grid is Optimal:</strong> Electricity load ({forecast.predictedPowerKW} kW) is safely within hostel transformer limits.
                 </div>
               )}
 

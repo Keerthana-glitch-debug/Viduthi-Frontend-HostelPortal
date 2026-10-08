@@ -50,8 +50,12 @@ const WARDEN_NAV = [
 ]
 
 const ADMIN_NAV = [
-  { to: '/app', label: 'Administrative Console', icon: LayoutDashboard, end: true },
+  { to: '/app', label: 'Central Console', icon: LayoutDashboard, end: true },
+  { to: '/app/simulation', label: 'Daily Forecaster', icon: Activity },
   { to: '/app/users', label: 'User Directory', icon: Users2 },
+  { to: '/app/rooms', label: 'Rooms & Bed Capacity', icon: DoorOpen },
+  { to: '/app/complaints', label: 'Complaints Desk', icon: MessageSquareWarning },
+  { to: '/app/sos-monitor', label: 'Emergency SOS Monitor', icon: ShieldAlert },
   { to: '/app/settings', label: 'Settings', icon: SettingsIcon },
 ]
 

@@ -244,6 +244,9 @@ export default function Dashboard() {
             <h1>Campus Systems &amp; Hostel Overview</h1>
           </div>
           <div className="page-header-actions">
+            <button className="btn btn-secondary" onClick={() => navigate('/app/simulation')}>
+              <Activity size={15} /> Daily Forecaster
+            </button>
             <button className="btn btn-secondary" onClick={handleExportAll}>
               <Download size={15} /> Download All Records (.CSV)
             </button>
