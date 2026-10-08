@@ -6,6 +6,13 @@ import { store } from './store/store'
 import App from './App.jsx'
 import './index.css'
 
+try {
+  const storedFont = JSON.parse(window.localStorage.getItem('vidudhi:fontTheme') || '"classic"')
+  document.documentElement.setAttribute('data-font', storedFont)
+} catch {
+  document.documentElement.setAttribute('data-font', 'classic')
+}
+
 // HashRouter (URLs like /#/app/rooms) instead of BrowserRouter is used here
 // because GitHub Pages is a static file host with no server-side routing —
 // it can't redirect a refresh on /app/rooms back to index.html. HashRouter

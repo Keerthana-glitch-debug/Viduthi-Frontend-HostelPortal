@@ -255,14 +255,20 @@ export default function RealFaceIdScanner({
               // Mathematical Euclidean distance between 128-D live face vector and enrolled baseline
               const distance = faceapi.euclideanDistance(liveDescriptor, activeEnrolledDescriptor)
               
-              // Standard biometric threshold:
-              // distance < 0.48: SAME PERSON (Confidence > 85%)
-              // distance >= 0.48: DIFFERENT PERSON (Mismatch!)
-              const confidenceVal = Math.max(0, Math.min(100, Math.round((1 - distance / 0.65) * 100)))
+              // Mathematically calibrated biometric confidence:
+              // Standard ResNet 128-D Euclidean distance threshold is 0.48
+              let confidenceVal = 0
+              if (distance < 0.48) {
+                // Verified genuine match: scales smoothly from 85% to 99%
+                confidenceVal = Math.round(99 - (distance / 0.48) * 14)
+              } else {
+                confidenceVal = Math.max(0, Math.round((1 - (distance - 0.48) / 0.22) * 50))
+              }
               setMatchScore(confidenceVal)
 
               if (distance < 0.48) {
                 // GENUINE MATCH CONFIRMED
+                setMismatchReason('')
                 handleMatchSuccess(video, liveDescriptor, distance, confidenceVal)
                 return
               } else {
@@ -304,6 +310,7 @@ export default function RealFaceIdScanner({
   const handleMatchSuccess = (video, liveDescriptor, distance, confidenceVal) => {
     stopCameraStream()
     playMatchChime()
+    setMismatchReason('')
 
     // Capture verification photo
     const captureCanvas = document.createElement('canvas')
@@ -649,8 +656,8 @@ export default function RealFaceIdScanner({
         </div>
       )}
 
-      {/* Mismatch Warning Alert Banner */}
-      {mismatchReason && (
+      {/* Mismatch Warning Alert Banner — only active when not verified */}
+      {cameraState !== 'verified' && mismatchReason && (
         <div
           style={{
             background: 'rgba(239, 68, 68, 0.1)',

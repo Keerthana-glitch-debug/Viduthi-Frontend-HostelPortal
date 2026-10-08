@@ -32,12 +32,16 @@ const userSchema = new mongoose.Schema(
     rollNo: {
       type: String,
       trim: true,
+      unique: true,
       sparse: true,
+      index: true,
     },
     staffId: {
       type: String,
       trim: true,
+      unique: true,
       sparse: true,
+      index: true,
     },
     roomNumber: {
       type: String,

@@ -152,3 +152,67 @@
 .accent-turquoise { --accent: #14B8A6; --accent-border: #0D9488; --accent-ink: #FFFFFF; --accent-soft: #CCFBF1; }
 .accent-sunshine { --accent: #F59E0B; --accent-border: #D97706; --accent-ink: #FFFFFF; --accent-soft: #FEF3C7; }
 .accent-gold { --accent: #F59E0B; --accent-border: #D97706; --accent-ink: #FFFFFF; --accent-soft: #FEF3C7; }
+
+/* ------------------------------------------------------------------ */
+/* Dynamic Font Themes across full Application                         */
+/* ------------------------------------------------------------------ */
+.font-rounded, [data-font="rounded"], [data-font="rounded"] body {
+  --font-display: 'Baloo 2', sans-serif !important;
+  --font-body: 'Baloo 2', sans-serif !important;
+  font-family: 'Baloo 2', sans-serif !important;
+}
+.font-rounded *:not(.mono):not(code):not(kbd):not(pre),
+[data-font="rounded"] *:not(.mono):not(code):not(kbd):not(pre) {
+  font-family: 'Baloo 2', sans-serif !important;
+}
+
+.font-classic, [data-font="classic"], [data-font="classic"] body {
+  --font-display: 'Space Grotesk', sans-serif !important;
+  --font-body: 'Space Grotesk', sans-serif !important;
+  font-family: 'Space Grotesk', sans-serif !important;
+}
+.font-classic *:not(.mono):not(code):not(kbd):not(pre),
+[data-font="classic"] *:not(.mono):not(code):not(kbd):not(pre) {
+  font-family: 'Space Grotesk', sans-serif !important;
+}
+
+.font-serif, [data-font="serif"], [data-font="serif"] body {
+  --font-display: 'Fraunces', serif !important;
+  --font-body: 'Fraunces', serif !important;
+  font-family: 'Fraunces', serif !important;
+}
+.font-serif *:not(.mono):not(code):not(kbd):not(pre),
+[data-font="serif"] *:not(.mono):not(code):not(kbd):not(pre) {
+  font-family: 'Fraunces', serif !important;
+}
+
+.font-modern, [data-font="modern"], [data-font="modern"] body {
+  --font-display: 'Poppins', sans-serif !important;
+  --font-body: 'Poppins', sans-serif !important;
+  font-family: 'Poppins', sans-serif !important;
+}
+.font-modern *:not(.mono):not(code):not(kbd):not(pre),
+[data-font="modern"] *:not(.mono):not(code):not(kbd):not(pre) {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+.font-elegant, [data-font="elegant"], [data-font="elegant"] body {
+  --font-display: 'Playfair Display', serif !important;
+  --font-body: 'Playfair Display', serif !important;
+  font-family: 'Playfair Display', serif !important;
+}
+.font-elegant *:not(.mono):not(code):not(kbd):not(pre),
+[data-font="elegant"] *:not(.mono):not(code):not(kbd):not(pre) {
+  font-family: 'Playfair Display', serif !important;
+}
+
+.font-playful, [data-font="playful"], [data-font="playful"] body {
+  --font-display: 'Quicksand', sans-serif !important;
+  --font-body: 'Quicksand', sans-serif !important;
+  font-family: 'Quicksand', sans-serif !important;
+}
+.font-playful *:not(.mono):not(code):not(kbd):not(pre),
+[data-font="playful"] *:not(.mono):not(code):not(kbd):not(pre) {
+  font-family: 'Quicksand', sans-serif !important;
+}
+

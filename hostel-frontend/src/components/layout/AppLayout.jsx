@@ -68,6 +68,8 @@ export default function AppLayout() {
 
   useEffect(() => {
     try { window.localStorage.setItem('vidudhi:fontTheme', JSON.stringify(fontTheme)) } catch { /* no-op */ }
+    document.documentElement.setAttribute('data-font', fontTheme)
+    document.body.setAttribute('data-font', fontTheme)
   }, [fontTheme])
 
   useEffect(() => {

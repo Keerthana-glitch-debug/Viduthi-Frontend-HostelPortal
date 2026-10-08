@@ -107,6 +107,10 @@ export default function Settings() {
 
   const chooseFont = (font) => {
     dispatch(setFontTheme(font))
+    try {
+      document.documentElement.setAttribute('data-font', font)
+      document.body.setAttribute('data-font', font)
+    } catch { /* no-op */ }
     dispatch(pushToast('Font style updated', 'info'))
   }
 

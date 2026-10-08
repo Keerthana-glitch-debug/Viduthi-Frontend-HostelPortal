@@ -9,6 +9,6 @@ router.use(protect);
 router.get('/', getLeaveRequests);
 router.post('/', createLeaveRequest);
 router.patch('/:id', authorize('warden', 'admin'), updateLeaveStatus);
-router.post('/verify/:id', verifyGatePass);
+router.post('/verify/:id', authorize('warden', 'admin', 'staff'), verifyGatePass);
 
 module.exports = router;

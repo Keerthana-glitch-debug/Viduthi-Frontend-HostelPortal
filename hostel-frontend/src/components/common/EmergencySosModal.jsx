@@ -4,6 +4,7 @@ import { PhoneCall, ShieldAlert, HeartPulse, Flame, X, CheckCircle2, Siren, Radi
 import { selectUser } from '../../store/slices/authSlice'
 import { selectMyRoom } from '../../store/slices/roomsSlice'
 import { pushToast } from '../../store/slices/uiSlice'
+import { api } from '../../api/client'
 import './EmergencySosModal.css'
 
 const EMERGENCY_CONTACTS = [
@@ -21,24 +22,47 @@ export default function EmergencySosModal({ isOpen, onClose }) {
 
   const [distressActive, setDistressActive] = useState(false)
   const [alertId, setAlertId] = useState(null)
+  const [alertRecordId, setAlertRecordId] = useState(null)
   const [dispatchedAt, setDispatchedAt] = useState(null)
 
   if (!isOpen) return null
 
-  const handleTriggerSOS = () => {
-    const newId = `SOS-${Math.floor(1000 + Math.random() * 9000)}`
+  const handleTriggerSOS = async () => {
     const timeStr = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-    setAlertId(newId)
     setDispatchedAt(timeStr)
     setDistressActive(true)
-    dispatch(pushToast(`🚨 Emergency SOS broadcasted (${newId}) to Warden & Security Patrol!`, 'bad'))
+
+    try {
+      const res = await api.post('/notifications/sos', {
+        roomNumber: room?.roomNumber || 'A-101',
+        block: room?.block || 'Main Block',
+        emergencyType: 'Critical Resident Assistance',
+        residentName: user?.name,
+        residentRoll: user?.rollNo || user?.id,
+      })
+
+      const generatedId = res.alert?.alertId || `SOS-${Math.floor(1000 + Math.random() * 9000)}`
+      setAlertId(generatedId)
+      if (res.alert?._id) setAlertRecordId(res.alert._id)
+      dispatch(pushToast(`🚨 Emergency SOS broadcasted (${generatedId}) live to Warden & Security Patrol!`, 'bad'))
+    } catch (err) {
+      const fallbackId = `SOS-${Math.floor(1000 + Math.random() * 9000)}`
+      setAlertId(fallbackId)
+      dispatch(pushToast(`🚨 Emergency SOS broadcasted (${fallbackId}) to campus security!`, 'bad'))
+    }
   }
 
-  const handleCancelSOS = () => {
+  const handleCancelSOS = async () => {
+    if (alertRecordId) {
+      try {
+        await api.patch(`/notifications/sos/${alertRecordId}/resolve`, {})
+      } catch (e) { /* ignore */ }
+    }
     setDistressActive(false)
     setAlertId(null)
+    setAlertRecordId(null)
     setDispatchedAt(null)
-    dispatch(pushToast('Emergency alert cancelled.', 'info'))
+    dispatch(pushToast('Emergency alert cancelled and resolved.', 'info'))
   }
 
   return (

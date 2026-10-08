@@ -45,7 +45,20 @@ if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));
 }
 
-// Global API rate limiter
+// Strict brute-force protection for authentication endpoints (prevent credential guessing)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 15, // Max 15 login attempts per 15 min per IP
+  message: {
+    success: false,
+    message: 'Too many authentication attempts from this IP. Please try again after 15 minutes to prevent unauthorized access.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api/auth/login', authLimiter);
+
+// Global API rate limiter for regular traffic
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 500, // Max 500 requests per 15 min per IP

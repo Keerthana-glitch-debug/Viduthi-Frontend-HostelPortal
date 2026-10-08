@@ -84,3 +84,44 @@ exports.checkoutVisitor = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// @desc    Update Visitor Pass Status (Approve / Reject / Update)
+// @route   PATCH /api/visitors/:id/status
+// @access  Private (Warden, Admin)
+exports.updateVisitorStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const visitor = await Visitor.findById(req.params.id);
+    if (!visitor) {
+      return res.status(404).json({ success: false, message: 'Visitor record not found.' });
+    }
+
+    if (!['Pending', 'Approved', 'Rejected', 'Active Inside', 'Checked Out', 'Overstayed Alert'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Invalid status provided.' });
+    }
+
+    visitor.status = status;
+    if (status === 'Checked Out' && !visitor.exitTime) {
+      visitor.exitTime = new Date();
+    }
+    await visitor.save();
+
+    await recordActivity({
+      user: req.user,
+      action: 'UPDATED_VISITOR_STATUS',
+      resourceType: 'system',
+      resourceId: visitor._id.toString(),
+      title: `Visitor Pass ${visitor.passNumber} status updated to ${status} by ${req.user.name}`,
+      route: '/app/visitors',
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Visitor pass status updated to ${status}.`,
+      visitor,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+

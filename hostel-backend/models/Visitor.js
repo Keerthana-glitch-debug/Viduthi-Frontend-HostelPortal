@@ -54,7 +54,7 @@ const visitorSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['Active Inside', 'Checked Out', 'Overstayed Alert'],
+      enum: ['Pending', 'Approved', 'Rejected', 'Active Inside', 'Checked Out', 'Overstayed Alert'],
       default: 'Active Inside',
     },
     gateOfficer: {
