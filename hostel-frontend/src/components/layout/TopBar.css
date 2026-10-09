@@ -125,11 +125,76 @@
 .user-name { font-size: 13px; font-weight: 700; color: var(--ink); }
 .user-role { font-size: 11px; color: var(--ink-soft); font-weight: 600; }
 
-@media (max-width: 700px) {
-  .topbar-search { display: none; }
+@media (max-width: 768px) {
+  .topbar {
+    padding: 10px 14px;
+    gap: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .mobile-menu-btn {
+    display: inline-flex !important;
+  }
+  .topbar-title {
+    flex: 1;
+    min-width: 0;
+  }
+  .topbar-title h2 {
+    font-size: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .topbar-subtitle {
+    display: none;
+  }
+  .topbar-search {
+    display: none;
+  }
+  .topbar-actions {
+    gap: 6px;
+  }
+  .icon-btn {
+    width: 34px;
+    height: 34px;
+  }
+  .avatar {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+.mobile-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+.mobile-menu-btn:hover {
+  background: var(--surface-2);
+  border-color: var(--line-strong);
 }
 
 @media (max-width: 540px) {
   .btn-sos span { display: none; }
-  .btn-sos { padding: 8px 10px; }
+  .btn-sos { padding: 7px 9px; }
+  .duty-clock { display: none !important; }
+}
+
+@media (max-width: 380px) {
+  .topbar {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+  .topbar-title h2 {
+    font-size: 14px;
+  }
 }

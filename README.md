@@ -26,7 +26,7 @@ Unified full-stack hostel resident management platform featuring 1:1 ResNet-34 n
 To keep this portal active permanently without needing your personal laptop running:
 
 1. Go to [https://dashboard.render.com](https://dashboard.render.com) and click **New + > Web Service**.
-2. Connect your GitHub repository: `Viduthi-Frontend-HostelPortal`.
+2. Connect your GitHub repository: `Viduthi-HostelPortal`.
 3. Set the following settings:
    - **Environment**: `Node`
    - **Branch**: `main` or `master`

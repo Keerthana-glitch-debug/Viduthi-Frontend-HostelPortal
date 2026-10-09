@@ -101,6 +101,11 @@ export default function AppLayout() {
           onLogout={() => { dispatch(logout()); navigate('/login') }}
           unreadCount={unreadCount}
         />
+        <div
+          className={`sidebar-backdrop ${!sidebarCollapsed ? 'is-open' : ''}`}
+          onClick={() => dispatch(setSidebarCollapsed(true))}
+          aria-hidden="true"
+        />
         <div className="app-main">
           <TopBar
             title={title}

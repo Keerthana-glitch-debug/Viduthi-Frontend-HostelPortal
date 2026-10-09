@@ -1,8 +1,8 @@
 import { useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { Search, Sun, Moon, Bell, DoorOpen, MessageSquareWarning, CalendarClock, ShieldAlert } from 'lucide-react'
-import { selectUi, toggleTheme } from '../../store/slices/uiSlice'
+import { Search, Sun, Moon, Bell, DoorOpen, MessageSquareWarning, CalendarClock, ShieldAlert, Menu } from 'lucide-react'
+import { selectUi, toggleTheme, toggleSidebar } from '../../store/slices/uiSlice'
 import { selectRooms } from '../../store/slices/roomsSlice'
 import { selectComplaints } from '../../store/slices/complaintsSlice'
 import { selectLeaveRequests } from '../../store/slices/leaveSlice'
@@ -78,6 +78,15 @@ export default function TopBar({ title, subtitle, user, unreadCount }) {
 
   return (
     <header className="topbar">
+      <button
+        type="button"
+        className="mobile-menu-btn"
+        onClick={() => dispatch(toggleSidebar())}
+        aria-label="Toggle navigation menu"
+      >
+        <Menu size={20} strokeWidth={2.2} />
+      </button>
+
       <div className="topbar-title">
         <h2>{title}</h2>
         {subtitle && <p className="topbar-subtitle">{subtitle}</p>}

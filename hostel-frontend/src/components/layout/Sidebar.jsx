@@ -4,10 +4,10 @@ import {
   LayoutDashboard, DoorOpen, MessageSquareWarning, CalendarClock,
   UserCheck, WashingMachine, UtensilsCrossed, Wallet, Bell, ChevronsLeft,
   KeyRound, LogOut, Settings as SettingsIcon, Bot, Map, Dumbbell,
-  HelpCircle, ShieldAlert, Cpu, Users2, Fingerprint, Stethoscope, Activity,
+  HelpCircle, ShieldAlert, Cpu, Users2, Fingerprint, Stethoscope, Activity, X,
 } from 'lucide-react'
 import { selectAuth } from '../../store/slices/authSlice'
-import { toggleSidebar } from '../../store/slices/uiSlice'
+import { toggleSidebar, setSidebarCollapsed } from '../../store/slices/uiSlice'
 import useTranslation from '../../hooks/useTranslation'
 import brandLogo from '../../assets/brand-logo.jpg'
 import './Sidebar.css'
@@ -97,6 +97,12 @@ export default function Sidebar({ collapsed, onLogout, unreadCount }) {
     doctor: 'Campus Health Clinic',
   }[role] || 'Hostel Portal'
 
+  const handleNavClick = () => {
+    if (window.innerWidth <= 768) {
+      dispatch(setSidebarCollapsed(true))
+    }
+  }
+
   return (
     <aside className={`rack ${collapsed ? 'is-collapsed' : ''}`}>
       <div className="rack-brand">
@@ -141,6 +147,14 @@ export default function Sidebar({ collapsed, onLogout, unreadCount }) {
             <span className="brand-sub">{brandSub}</span>
           </div>
         )}
+        <button
+          type="button"
+          className="mobile-drawer-close"
+          onClick={() => dispatch(setSidebarCollapsed(true))}
+          aria-label="Close menu"
+        >
+          <X size={18} />
+        </button>
       </div>
 
       <div className="rack-rail" aria-hidden="true" />
@@ -153,6 +167,7 @@ export default function Sidebar({ collapsed, onLogout, unreadCount }) {
               key={to}
               to={to}
               end={end}
+              onClick={handleNavClick}
               className={({ isActive }) => `key-fob ${isSos ? 'is-sos' : ''} ${isActive ? 'is-active' : ''}`}
               title={collapsed ? label : undefined}
             >

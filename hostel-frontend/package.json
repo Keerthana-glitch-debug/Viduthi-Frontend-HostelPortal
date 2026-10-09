@@ -1,9 +1,9 @@
 {
-  "name": "vidudhi-hostel-frontend",
+  "name": "vidudhi-hostel-portal",
   "private": true,
   "version": "2.0.0",
   "type": "module",
-  "homepage": "https://keerthana-glitch-debug.github.io/Viduthi-Frontend-HostelPortal",
+  "homepage": "https://keerthana-glitch-debug.github.io/Viduthi-HostelPortal",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
