@@ -60,10 +60,7 @@ const ADMIN_NAV = [
 ]
 
 const MESS_NAV = [
-  { to: '/app', label: 'Mess Command Desk', icon: LayoutDashboard, end: true },
-  { to: '/app/mess', label: 'Menu & Food Inventory', icon: UtensilsCrossed },
-  { to: '/app/complaints', label: 'Food & Complaints Desk', icon: MessageSquareWarning },
-  { to: '/app/notifications', label: 'Notices & Circulars', icon: Bell, badgeKey: true },
+  { to: '/app/mess', label: 'Mess Menu & Feedback', icon: UtensilsCrossed, end: true },
   { to: '/app/settings', label: 'Settings', icon: SettingsIcon },
 ]
 

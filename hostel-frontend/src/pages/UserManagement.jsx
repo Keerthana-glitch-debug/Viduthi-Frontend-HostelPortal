@@ -267,9 +267,11 @@ export default function UserManagement() {
           <button className="btn btn-secondary" onClick={handleExportUsers}>
             <Download size={15} /> Export Users (.CSV)
           </button>
-          <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
-            <UserPlus size={15} /> Add New User
-          </button>
+          {role === 'admin' && (
+            <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
+              <UserPlus size={15} /> Add New User
+            </button>
+          )}
         </div>
       </div>
 
@@ -391,38 +393,48 @@ export default function UserManagement() {
                     </div>
                   </td>
                   <td>
-                    <button
-                      type="button"
-                      onClick={() => dispatch(toggleUserStatus(u.id))}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                      title="Click to toggle status"
-                    >
-                      <Badge tone={u.status === 'Active' ? 'ok' : 'bad'}>{u.status}</Badge>
-                    </button>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                    {role === 'admin' ? (
                       <button
                         type="button"
-                        className="btn btn-ghost btn-sm"
-                        style={{ color: 'var(--accent-border)', padding: '4px 8px' }}
-                        onClick={() => handleOpenEdit(u)}
-                        title="Edit User Details in DB"
+                        onClick={() => dispatch(toggleUserStatus(u.id))}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                        title="Click to toggle status"
                       >
-                        <Edit3 size={13} />
+                        <Badge tone={u.status === 'Active' ? 'ok' : 'bad'}>{u.status}</Badge>
                       </button>
-                      {u.role !== 'admin' && (
+                    ) : (
+                      <Badge tone={u.status === 'Active' ? 'ok' : 'bad'}>{u.status}</Badge>
+                    )}
+                  </td>
+                  <td>
+                    {role === 'admin' ? (
+                      <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                         <button
                           type="button"
                           className="btn btn-ghost btn-sm"
-                          style={{ color: '#DC2626', padding: '4px 8px' }}
-                          onClick={() => setDeletingUser(u)}
-                          title="Remove User"
+                          style={{ color: 'var(--accent-border)', padding: '4px 8px' }}
+                          onClick={() => handleOpenEdit(u)}
+                          title="Edit User Details in DB"
                         >
-                          <Trash2 size={13} />
+                          <Edit3 size={13} />
                         </button>
-                      )}
-                    </div>
+                        {u.role !== 'admin' && (
+                          <button
+                            type="button"
+                            className="btn btn-ghost btn-sm"
+                            style={{ color: '#DC2626', padding: '4px 8px' }}
+                            onClick={() => setDeletingUser(u)}
+                            title="Remove User"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: '0.8rem', color: 'var(--ink-faint)', fontStyle: 'italic' }}>
+                        Read-Only (Warden)
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}

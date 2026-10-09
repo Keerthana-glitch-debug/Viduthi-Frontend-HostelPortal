@@ -173,6 +173,12 @@
   box-shadow: 0 0 0 3px rgba(124, 252, 0, 0.15);
 }
 
+.form-field input::placeholder {
+  opacity: 0.35 !important;
+  color: var(--ink-faint, #94a3b8) !important;
+  letter-spacing: 2px;
+}
+
 .login-submit {
   width: 100%;
   justify-content: center;

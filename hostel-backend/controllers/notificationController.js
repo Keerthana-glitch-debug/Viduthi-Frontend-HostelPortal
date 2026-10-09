@@ -17,14 +17,15 @@ exports.getNotifications = async (req, res) => {
 // @access  Private (Warden, Admin)
 exports.createNotification = async (req, res) => {
   try {
-    const { title, message, type, audience, pinned } = req.body;
-    const author = req.user ? req.user.name : 'Warden Office';
+    const { title, message, type, audience, target, pinned } = req.body;
+    const author = req.user ? req.user.name : (req.body.author || 'Warden Office');
 
     const notification = await Notification.create({
       title,
       message,
       type: type || 'announcement',
       audience: audience || 'all',
+      target: target || 'All Residents',
       author,
       pinned: Boolean(pinned),
     });

@@ -235,7 +235,11 @@ export default function ClinicConsultation() {
     return matchQuery && matchPriority
   })
 
-  const filteredHistory = completedConsultations.filter((c) => {
+  const historyScoped = role === 'student'
+    ? completedConsultations.filter((c) => (c.rollNo && c.rollNo === user?.rollNo) || (c.studentName && c.studentName === user?.name))
+    : completedConsultations
+
+  const filteredHistory = historyScoped.filter((c) => {
     return (
       c.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.rollNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -455,20 +459,39 @@ export default function ClinicConsultation() {
                 <div key={student.id} className={`queue-card ${student.priority === 'Urgent' ? 'priority-urgent' : ''}`}>
                   <div className="queue-card-top">
                     <div>
-                      <h4 className="queue-student-name">{student.studentName}</h4>
-                      <div className="queue-student-meta">
-                        {student.rollNo} · Room <strong>{student.roomNumber}</strong> · {student.department}
-                      </div>
+                      {role === 'student' && student.rollNo !== user?.rollNo ? (
+                        <>
+                          <h4 className="queue-student-name">Resident Patient #{student.token}</h4>
+                          <div className="queue-student-meta">
+                            Waiting in Infirmary · Live Appointment
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <h4 className="queue-student-name">
+                            {student.studentName} {student.rollNo === user?.rollNo ? '(You)' : ''}
+                          </h4>
+                          <div className="queue-student-meta">
+                            {student.rollNo} · Room <strong>{student.roomNumber}</strong> · {student.department}
+                          </div>
+                        </>
+                      )}
                     </div>
                     <span className={`token-pill ${student.priority === 'Urgent' ? 'urgent' : ''}`}>
                       {student.token}
                     </span>
                   </div>
 
-                  <div className={`queue-symptoms-box ${student.priority === 'Urgent' ? 'urgent' : ''}`}>
-                    <strong>Reported Symptoms:</strong>
-                    <div style={{ marginTop: 2 }}>{student.symptoms}</div>
-                  </div>
+                  {role === 'student' && student.rollNo !== user?.rollNo ? (
+                    <div style={{ padding: '8px 12px', background: 'var(--surface-2)', borderRadius: 6, fontSize: '0.8rem', color: 'var(--ink-soft)', fontStyle: 'italic' }}>
+                      Medical symptoms and health observations are confidential under hostel clinic policy.
+                    </div>
+                  ) : (
+                    <div className={`queue-symptoms-box ${student.priority === 'Urgent' ? 'urgent' : ''}`}>
+                      <strong>Reported Symptoms:</strong>
+                      <div style={{ marginTop: 2 }}>{student.symptoms}</div>
+                    </div>
+                  )}
 
 
 

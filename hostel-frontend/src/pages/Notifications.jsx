@@ -260,14 +260,15 @@ export default function Notifications() {
           />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {filtered.map((n) => {
-              const cfg = TYPE_CONFIG[n.type] || TYPE_CONFIG.info
-              const IconComp = cfg.icon
+            {filtered.map((n, idx) => {
+              const noticeId = n.id || n._id || `notif-${idx}`
+              const cfg = (n.type && TYPE_CONFIG[n.type]) || TYPE_CONFIG.info
+              const IconComp = cfg?.icon || Info
 
               return (
                 <div
-                  key={n.id}
-                  onClick={() => dispatch(markRead(n.id))}
+                  key={noticeId}
+                  onClick={() => dispatch(markRead(noticeId))}
                   style={{
                     display: 'flex',
                     gap: 14,
@@ -325,7 +326,7 @@ export default function Notifications() {
                         )}
                       </div>
                       <span className="mono" style={{ fontSize: '0.8rem', color: 'var(--ink-faint)' }}>
-                        {n.date}
+                        {n.date || 'Just Now'}
                       </span>
                     </div>
 

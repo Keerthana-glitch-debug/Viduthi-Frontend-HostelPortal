@@ -49,7 +49,13 @@ export default function Complaints() {
     ? complaints
     : role === 'mess_manager'
     ? complaints.filter((c) => c.category === 'Mess' || c.title?.toLowerCase().includes('mess') || c.title?.toLowerCase().includes('food'))
-    : complaints.filter((c) => c.roomNumber === (room?.roomNumber || user.roomNumber || 'A-101'))
+    : complaints.filter((c) =>
+        (c.raisedBy && (c.raisedBy === user?.name || c.raisedBy === user?.rollNo)) ||
+        (c.studentName && c.studentName === user?.name) ||
+        (c.studentRoll && c.studentRoll === user?.rollNo) ||
+        (c.rollNo && c.rollNo === user?.rollNo) ||
+        (c.userId && (c.userId === user?.id || c.userId === user?._id))
+      )
 
   const { query, setQuery, status, setStatus, filtered } = useFilter(scoped, ['title', 'category', 'roomNumber'])
 
@@ -72,8 +78,10 @@ export default function Complaints() {
     dispatch(
       addComplaint({
         ...draft,
-        roomNumber: room?.roomNumber || user.roomNumber || 'A-101',
-        raisedBy: user.name,
+        roomNumber: room?.roomNumber || user?.roomNumber || 'A-101',
+        raisedBy: user?.name,
+        studentName: user?.name,
+        studentRoll: user?.rollNo || '',
       })
     )
     dispatch(pushToast('Complaint ticket logged! Facilities team dispatched.', 'ok'))

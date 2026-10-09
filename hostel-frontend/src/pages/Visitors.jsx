@@ -43,7 +43,11 @@ export default function Visitors() {
 
   // Students see only their own visitor requests; Warden & Admin see all
   const scoped = role === 'student'
-    ? visitors.filter((v) => v.roomNumber === room?.roomNumber || v.residentName === user?.name)
+    ? visitors.filter((v) =>
+        (v.residentName && v.residentName === user?.name) ||
+        (v.studentRoll && v.studentRoll === user?.rollNo) ||
+        (v.rollNo && v.rollNo === user?.rollNo)
+      )
     : visitors
 
   const { status, setStatus, filtered } = useFilter(scoped, [], 'status')
@@ -61,7 +65,8 @@ export default function Visitors() {
         relation: draft.relation,
         purpose: draft.purpose.trim(),
         residentName: user?.name || 'Resident Student',
-        roomNumber: room?.roomNumber || 'A-101',
+        studentRoll: user?.rollNo || '',
+        roomNumber: room?.roomNumber || user?.roomNumber || 'A-101',
       })
     )
     dispatch(pushToast(`Visitor entry request for ${draft.visitorName} submitted for Warden verification.`, 'ok'))

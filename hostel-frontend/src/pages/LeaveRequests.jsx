@@ -51,7 +51,12 @@ export default function LeaveRequests() {
 
   // Students see only their own leave requests; Warden & Admin see all
   const scoped = role === 'student'
-    ? leaveRequests.filter((l) => l.studentRoll === user?.rollNo || l.studentName === user?.name || l.roomNumber === room?.roomNumber)
+    ? leaveRequests.filter((l) =>
+        (l.studentRoll && l.studentRoll === user?.rollNo) ||
+        (l.rollNo && l.rollNo === user?.rollNo) ||
+        (l.studentName && l.studentName === user?.name) ||
+        (l.email && l.email === user?.email)
+      )
     : leaveRequests
 
   const { status, setStatus, filtered } = useFilter(scoped, [], 'status')

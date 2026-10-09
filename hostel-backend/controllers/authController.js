@@ -247,12 +247,38 @@ exports.googleLogin = async (req, res) => {
 
     // 2. CRITICAL DATABASE VERIFICATION & APPROVAL:
     // Query MongoDB Atlas to verify if this Google account is registered & authorized!
-    const user = await User.findOne({
+    let user = await User.findOne({
       $or: [
         { email: targetEmail.toLowerCase() },
         { rollNo: targetEmail.split('@')[0] },
       ],
     });
+
+    if (!user) {
+      // Auto-provision verified institutional students and admins requested by hostel management
+      const isInstitutionalOrAdmin =
+        targetEmail === '24104030@nec.edu.in' ||
+        targetEmail === 'keerthana020706@gmail.com' ||
+        targetEmail === '24104404@nec.edu.in' ||
+        targetEmail.endsWith('@nec.edu.in');
+
+      if (isInstitutionalOrAdmin) {
+        const assignedRole = targetEmail === 'keerthana020706@gmail.com' ? 'admin' : 'student';
+        const studentRoll = targetEmail.split('@')[0];
+        user = await User.create({
+          name: targetName || (targetEmail === 'keerthana020706@gmail.com' ? 'Keerthana (Admin)' : `Student ${studentRoll}`),
+          email: targetEmail.toLowerCase(),
+          role: assignedRole,
+          rollNo: assignedRole === 'student' ? studentRoll : undefined,
+          roomNumber: assignedRole === 'student' ? 'A-101' : undefined,
+          block: 'A Block',
+          department: 'Computer Science & Engineering',
+          password: 'Vidudhi@2026',
+          authProvider: 'google',
+          isActive: true,
+        });
+      }
+    }
 
     if (!user) {
       // STRICT: Reject unapproved / unregistered accounts

@@ -182,7 +182,7 @@ export default function LaundryPage() {
                       <span className="mono" style={{ fontWeight: 800, fontSize: 14 }}>{l.id}</span>
                       <span className="badge badge-info">{l.serviceType}</span>
                       <span style={{ fontSize: 13, color: 'var(--ink)' }}>
-                        <strong>{l.itemCount}</strong> items · Fee: <strong style={{ color: 'var(--accent-border)' }}>₹{l.itemCount * 20}</strong> (₹20/cloth) · Room {l.roomNumber} ({l.studentName})
+                        <strong>{l.itemCount}</strong> items · Covered under Annual Hostel Fee (₹0) · Room {l.roomNumber} ({l.studentName})
                       </span>
                     </div>
 
@@ -270,11 +270,11 @@ export default function LaundryPage() {
       {showForm && (
         <Modal
           title="Request Laundry &amp; Ironing Service"
-          subtitle={`Room ${room?.roomNumber || 'A-101'} · ₹20 per cloth`}
+          subtitle={`Room ${room?.roomNumber || 'A-101'} · 100% Covered Under Annual Hostel Fee`}
           onClose={() => setShowForm(false)}
           footer={<>
             <button className="btn btn-ghost" onClick={() => setShowForm(false)}>Cancel</button>
-            <button className="btn btn-primary" onClick={submit}>Schedule Pickup (₹{draft.itemCount * 20})</button>
+            <button className="btn btn-primary" onClick={submit}>Schedule Pickup (₹0 Included)</button>
           </>}
         >
           <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -297,7 +297,7 @@ export default function LaundryPage() {
               </div>
             </div>
 
-            {/* Calculated Fee Banner */}
+            {/* Covered Under Yearly Fees Banner */}
             <div
               style={{
                 background: 'var(--accent-soft)',
@@ -310,13 +310,13 @@ export default function LaundryPage() {
               }}
             >
               <div>
-                <strong style={{ color: 'var(--accent-ink)', fontSize: 13 }}>
-                  Estimated Fee ({draft.itemCount} clothes × ₹20)
+                <strong style={{ color: 'var(--text-main)', fontSize: 13 }}>
+                  Annual Fee Coverage: {draft.itemCount} Clothes Included
                 </strong>
-                <div style={{ fontSize: 11, color: 'var(--ink)' }}>Will be added to resident monthly dues on delivery</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>100% covered under your hostel yearly package. No separate charges apply.</div>
               </div>
-              <div style={{ fontSize: 20, fontWeight: 900, color: 'var(--accent-ink)' }}>
-                ₹{draft.itemCount * 20}
+              <div style={{ fontSize: 18, fontWeight: 800, color: '#10B981' }}>
+                ₹0 (Free)
               </div>
             </div>
             <div>

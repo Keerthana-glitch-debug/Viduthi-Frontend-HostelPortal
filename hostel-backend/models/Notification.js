@@ -12,13 +12,15 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['announcement', 'maintenance', 'gate', 'alert', 'mess', 'emergency_sos'],
       default: 'announcement',
     },
     audience: {
       type: String,
-      enum: ['all', 'students', 'wardens', 'block_a', 'block_b', 'security'],
       default: 'all',
+    },
+    target: {
+      type: String,
+      default: 'All Residents',
     },
     author: {
       type: String,

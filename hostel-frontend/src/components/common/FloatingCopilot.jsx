@@ -31,7 +31,7 @@ Add-ons like Chicken Curry, Boiled Egg, and Omelette can be ordered directly fro
     keywords: ['laundry', 'wash', 'cloth', 'clothes', 'iron', 'ironing', 'machine'],
     response: `Laundry & Garment Care:
 • 3 Washing Machines (Machine 1, 2, 3) and Steam Iron Stations are active on the ground floor.
-• Standard steam ironing fee is ₹20 per cloth.
+• All laundry & steam ironing services are 100% covered under your yearly hostel fee (₹0 extra charge).
 • You can track progress across the visual stepper (Requested → Delivered) in the Laundry tab.`,
   },
   {

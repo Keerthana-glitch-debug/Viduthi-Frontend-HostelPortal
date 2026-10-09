@@ -286,44 +286,44 @@ export default function Mess() {
             </button>
             <button
               type="button"
-              className={`btn btn-sm ${messTab === 'headcount' ? 'btn-primary' : 'btn-ghost'}`}
-              onClick={() => setMessTab('headcount')}
-            >
-              <Scale size={14} /> Headcount &amp; Waste Forecast
-            </button>
-            <button
-              type="button"
-              className={`btn btn-sm ${messTab === 'inventory' ? 'btn-primary' : 'btn-ghost'}`}
-              onClick={() => setMessTab('inventory')}
-            >
-              <PackageCheck size={14} /> Grocery &amp; Raw Material Stock
-              {inventoryList.filter((i) => i.status === 'Low Stock').length > 0 && (
-                <span className="badge badge-bad" style={{ marginLeft: 6, fontSize: 10, padding: '1px 5px' }}>
-                  {inventoryList.filter((i) => i.status === 'Low Stock').length} Low
-                </span>
-              )}
-            </button>
-            <button
-              type="button"
-              className={`btn btn-sm ${messTab === 'dietary' ? 'btn-primary' : 'btn-ghost'}`}
-              onClick={() => setMessTab('dietary')}
-            >
-              <Apple size={14} /> Dietary &amp; Allergy Registry
-            </button>
-            <button
-              type="button"
-              className={`btn btn-sm ${messTab === 'safety' ? 'btn-primary' : 'btn-ghost'}`}
-              onClick={() => setMessTab('safety')}
-            >
-              <ShieldCheck size={14} /> Hygiene &amp; FSSAI Audit
-            </button>
-            <button
-              type="button"
               className={`btn btn-sm ${messTab === 'feedback' ? 'btn-primary' : 'btn-ghost'}`}
               onClick={() => setMessTab('feedback')}
             >
-              <MessageSquare size={14} /> Student Reviews ({feedback.length})
+              <MessageSquare size={14} /> Student Reviews &amp; Feedback ({feedback.length})
             </button>
+
+            {role !== 'mess_manager' && (
+              <>
+                <button
+                  type="button"
+                  className={`btn btn-sm ${messTab === 'headcount' ? 'btn-primary' : 'btn-ghost'}`}
+                  onClick={() => setMessTab('headcount')}
+                >
+                  <Scale size={14} /> Headcount &amp; Waste Forecast
+                </button>
+                <button
+                  type="button"
+                  className={`btn btn-sm ${messTab === 'inventory' ? 'btn-primary' : 'btn-ghost'}`}
+                  onClick={() => setMessTab('inventory')}
+                >
+                  <PackageCheck size={14} /> Grocery Stock
+                </button>
+                <button
+                  type="button"
+                  className={`btn btn-sm ${messTab === 'dietary' ? 'btn-primary' : 'btn-ghost'}`}
+                  onClick={() => setMessTab('dietary')}
+                >
+                  <Apple size={14} /> Dietary Registry
+                </button>
+                <button
+                  type="button"
+                  className={`btn btn-sm ${messTab === 'safety' ? 'btn-primary' : 'btn-ghost'}`}
+                  onClick={() => setMessTab('safety')}
+                >
+                  <ShieldCheck size={14} /> FSSAI Audit
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

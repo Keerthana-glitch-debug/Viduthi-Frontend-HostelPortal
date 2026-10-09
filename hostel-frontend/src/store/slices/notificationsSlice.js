@@ -45,14 +45,30 @@ export const markAllRead = createAsyncThunk(
 export const addNotification = createAsyncThunk(
   'notifications/add',
   async (newNotice) => {
+    const defaultDate = new Date().toISOString().slice(0, 16).replace('T', ' ')
+    const fallbackId = `NT-${Math.floor(9000 + Math.random() * 900)}`
     const payload = {
-      id: `NT-${Math.floor(9000 + Math.random() * 900)}`,
-      date: new Date().toISOString().slice(0, 16).replace('T', ' '),
+      id: fallbackId,
+      date: defaultDate,
       read: false,
+      pinned: false,
+      target: 'All Residents',
       ...newNotice,
     }
     try {
-      return await api.post('/notifications', payload)
+      const res = await api.post('/notifications', payload)
+      if (res && typeof res === 'object') {
+        return {
+          ...payload,
+          ...res,
+          id: res._id || res.id || payload.id,
+          date: res.createdAt ? new Date(res.createdAt).toISOString().slice(0, 16).replace('T', ' ') : payload.date,
+          type: newNotice.type || res.type || 'info',
+          target: newNotice.target || res.target || 'All Residents',
+          author: newNotice.author || res.author || 'Hostel Administration',
+        }
+      }
+      return payload
     } catch {
       return payload
     }
