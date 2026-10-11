@@ -18,7 +18,7 @@ function ToastItem({ toast }) {
   return (
     <div className={`toast toast-${toast.tone}`}>
       <Icon size={16} />
-      <span>{toast.message}</span>
+      <span>{typeof toast.message === 'string' ? toast.message : toast.message?.message || String(toast.message || '')}</span>
       <button onClick={() => dispatch(dismissToast(toast.id))} aria-label="Dismiss">
         <X size={13} />
       </button>

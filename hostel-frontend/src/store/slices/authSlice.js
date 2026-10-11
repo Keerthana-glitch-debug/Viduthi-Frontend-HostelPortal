@@ -20,8 +20,19 @@ function readStoredRole() {
   }
 }
 
+function readStoredIsLoggedIn() {
+  try {
+    return Boolean(
+      window.localStorage.getItem('vidudhi:jwt_token') ||
+      window.localStorage.getItem('vidudhi:auth_role')
+    )
+  } catch {
+    return false
+  }
+}
+
 const initialState = {
-  isLoggedIn: false,
+  isLoggedIn: readStoredIsLoggedIn(),
   role: readStoredRole(), // 'student' | 'warden' | 'admin' | 'mess_manager' | 'doctor'
   profiles: {
     student: readStoredUser('vidudhi:profile_student', studentUser),

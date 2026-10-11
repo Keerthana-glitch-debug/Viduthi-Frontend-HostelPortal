@@ -527,6 +527,60 @@ ${forecast.predictedPowerKW > 28 ? '⚠️ Power Directive: Monitor corridor lig
                 <span>Maximum (100%)</span>
               </div>
             </div>
+
+            {/* Control 5: Academic & Exam Stress */}
+            <div style={{ background: 'var(--surface-2)', padding: '12px 14px', borderRadius: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <label style={{ fontWeight: 700, fontSize: 13, margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Calendar size={14} color="#F59E0B" />
+                  Academic / Exam Stress Index
+                </label>
+                <span className="mono" style={{ fontSize: 13, fontWeight: 800, color: examStressIndex >= 70 ? '#DC2626' : '#F59E0B' }}>
+                  {examStressIndex}% · {examStressIndex >= 75 ? 'Finals' : examStressIndex >= 40 ? 'Midterms' : 'Standard'}
+                </span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={5}
+                value={examStressIndex}
+                onChange={(e) => { setExamStressIndex(Number(e.target.value)); setActivePreset('custom'); }}
+                style={{ width: '100%', accentColor: '#F59E0B', cursor: 'pointer' }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--ink-faint)', marginTop: 3 }}>
+                <span>Low (0%)</span>
+                <span>Semester (30%)</span>
+                <span>University Finals (100%)</span>
+              </div>
+            </div>
+
+            {/* Control 6: Dining Appetite & Special Feast */}
+            <div style={{ background: 'var(--surface-2)', padding: '12px 14px', borderRadius: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <label style={{ fontWeight: 700, fontSize: 13, margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Utensils size={14} color="#10B981" />
+                  Mess Meal Demand Factor
+                </label>
+                <span className="mono" style={{ fontSize: 13, fontWeight: 800, color: mealDemandFactor > 110 ? '#059669' : 'var(--text-main)' }}>
+                  {mealDemandFactor}% · {mealDemandFactor > 110 ? 'Special Feast' : mealDemandFactor < 80 ? 'Light / Fasting' : 'Standard Menu'}
+                </span>
+              </div>
+              <input
+                type="range"
+                min={50}
+                max={150}
+                step={5}
+                value={mealDemandFactor}
+                onChange={(e) => { setMealDemandFactor(Number(e.target.value)); setActivePreset('custom'); }}
+                style={{ width: '100%', accentColor: '#10B981', cursor: 'pointer' }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--ink-faint)', marginTop: 3 }}>
+                <span>Light (50%)</span>
+                <span>Standard (100%)</span>
+                <span>Hostel Day Feast (150%)</span>
+              </div>
+            </div>
           </div>
         </div>
 

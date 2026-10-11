@@ -60,8 +60,8 @@ export default function App() {
             <Route path="map" element={<DigitalMap />} />
           </Route>
 
-          {/* Warden, Admin & Mess Manager */}
-          <Route element={<RoleRoute allowedRoles={['warden', 'admin', 'mess_manager']} />}>
+          {/* Warden, Admin, Mess Manager & Staff */}
+          <Route element={<RoleRoute allowedRoles={['warden', 'admin', 'mess_manager', 'doctor']} />}>
             <Route path="simulation" element={<SimulationEngine />} />
           </Route>
 

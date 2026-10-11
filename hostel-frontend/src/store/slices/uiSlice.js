@@ -56,9 +56,21 @@ const uiSlice = createSlice({
       reducer: (state, action) => {
         state.toasts.push(action.payload)
       },
-      prepare: (message, tone = 'ok') => ({
-        payload: { id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, message, tone },
-      }),
+      prepare: (messageOrObj, toneArg = 'ok') => {
+        let msg = messageOrObj
+        let tone = toneArg
+        if (messageOrObj && typeof messageOrObj === 'object') {
+          msg = messageOrObj.message || ''
+          tone = messageOrObj.tone || toneArg || 'ok'
+        }
+        return {
+          payload: {
+            id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            message: String(msg || ''),
+            tone: tone === 'bad' || tone === 'danger' ? 'bad' : tone || 'ok',
+          },
+        }
+      },
     },
     dismissToast: (state, action) => {
       state.toasts = state.toasts.filter((t) => t.id !== action.payload)
