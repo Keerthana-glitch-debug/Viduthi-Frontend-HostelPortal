@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Vidudhi Hostel Portal - Comprehensive System Modules & Backend Architecture Guide</title>
+<style>
+  @page {
+    size: A4;
+    margin: 14mm 14mm 14mm 14mm;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #1e293b;
+    background: #ffffff;
+    line-height: 1.55;
+    font-size: 11pt;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Cover Page */
+  .cover {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 30mm 15mm 20mm;
+    page-break-after: always;
+    border-left: 6px solid #16a34a;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  }
+
+  .cover-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .cover-badge {
+    display: inline-block;
+    background: #dcfce7;
+    color: #15803d;
+    font-weight: 700;
+    font-size: 9.5pt;
+    padding: 4px 12px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border: 1px solid #86efac;
+  }
+
+  .cover-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 28pt;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.15;
+    margin-top: 14px;
+    letter-spacing: -0.02em;
+  }
+
+  .cover-subtitle {
+    font-size: 13pt;
+    color: #475569;
+    margin-top: 10px;
+    max-width: 600px;
+    line-height: 1.45;
+  }
+
+  .cover-meta {
+    border-top: 2px dashed #cbd5e1;
+    padding-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    font-size: 9.5pt;
+  }
+
+  .meta-item strong {
+    display: block;
+    color: #0f172a;
+    font-size: 10pt;
+    margin-bottom: 2px;
+  }
+
+  .meta-item span {
+    color: #64748b;
+  }
+
+  /* Section Headers */
+  h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18pt;
+    font-weight: 700;
+    color: #0f172a;
+    margin-top: 26px;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #e2e8f0;
+    page-break-after: avoid;
+  }
+
+  h2 {
+    font-size: 13.5pt;
+    font-weight: 700;
+    color: #1e293b;
+    margin-top: 20px;
+    margin-bottom: 8px;
+    page-break-after: avoid;
+  }
+
+  h3 {
+    font-size: 11pt;
+    font-weight: 700;
+    color: #334155;
+    margin-top: 12px;
+    margin-bottom: 4px;
+  }
+
+  p {
+    margin-bottom: 8px;
+    color: #334155;
+    text-align: justify;
+  }
+
+  /* Page Break Helpers */
+  .page-break {
+    page-break-before: always;
+  }
+
+  .avoid-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Module Card Style */
+  .module-card {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+
+  .module-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+  }
+
+  .module-title {
+    font-size: 12.5pt;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .module-tag {
+    font-size: 8pt;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+  }
+
+  .tag-core { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+  .tag-ai { background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+  .tag-hardware { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+  .tag-sos { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+  .human-box {
+    background: #f8fafc;
+    border-left: 3px solid #3b82f6;
+    padding: 8px 12px;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 10px;
+    font-size: 9.8pt;
+  }
+
+  .human-box strong {
+    color: #1e40af;
+    display: block;
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+  }
+
+  .tech-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 8px;
+    font-size: 9.2pt;
+  }
+
+  .tech-block {
+    background: #f1f5f9;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .tech-block strong {
+    display: block;
+    color: #0f172a;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 3px;
+  }
+
+  .tech-block code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8.5pt;
+    color: #0369a1;
+  }
+
+  /* Data Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 16px;
+    font-size: 9pt;
+    page-break-inside: avoid;
+  }
+
+  th {
+    background: #f1f5f9;
+    color: #334155;
+    text-align: left;
+    padding: 7px 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 8pt;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #cbd5e1;
+  }
+
+  td {
+    padding: 7px 9px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #1e293b;
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) td {
+    background: #f8fafc;
+  }
+
+  .code-pill {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8pt;
+    background: #e2e8f0;
+    color: #0f172a;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .method-get { color: #0284c7; font-weight: 700; }
+  .method-post { color: #16a34a; font-weight: 700; }
+  .method-patch { color: #d97706; font-weight: 700; }
+  .method-delete { color: #dc2626; font-weight: 700; }
+
+  /* Diagram Box */
+  .diagram-box {
+    background: #0f172a;
+    color: #f8fafc;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8.5pt;
+    line-height: 1.5;
+    margin: 12px 0 16px;
+    page-break-inside: avoid;
+    overflow-x: auto;
+  }
+
+  .diagram-box .accent { color: #4ade80; font-weight: 700; }
+  .diagram-box .muted { color: #94a3b8; }
+
+  /* Callout alert */
+  .alert-box {
+    background: #fef2f2;
+    border-left: 4px solid #ef4444;
+    padding: 8px 12px;
+    border-radius: 0 6px 6px 0;
+    margin: 10px 0;
+    font-size: 9.3pt;
+    color: #991b1b;
+  }
+
+  .footer-note {
+    text-align: center;
+    font-size: 8.5pt;
+    color: #94a3b8;
+    margin-top: 30px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER PAGE -->
+<div class="cover">
+  <div>
+    <div class="cover-header">
+      <span class="cover-badge">Engineering Documentation</span>
+      <span style="font-size: 9.5pt; color: #64748b; font-weight: 600;">System Release 2.0</span>
+    </div>
+    <h1 class="cover-title">Vidudhi Smart Residence & Hostel Living Platform</h1>
+    <p class="cover-subtitle">
+      A complete, humanized guide explaining every module, underlying hardware and AI algorithms, and seamless backend cloud connections.
+    </p>
+  </div>
+
+  <div class="diagram-box">
+    <span class="accent">[Client SPA: React + Vite + Redux Toolkit]</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;│ (HTTPS / Bearer JWT Authorization Tokens / JSON Payload)<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+    <span class="accent">[Backend API: Node.js + Express.js + Rate Limiters + Helmet Security]</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;│ (Mongoose ODM / TLS Encrypted Connection)<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+    <span class="accent">[Database Cloud: MongoDB Atlas Cluster 'keerthana']</span>
+  </div>
+
+  <div class="cover-meta">
+    <div class="meta-item">
+      <strong>Target Platform</strong>
+      <span>Web SPA (Desktop, Tablet, Mobile Fluid Responsive)</span>
+    </div>
+    <div class="meta-item">
+      <strong>Database Target</strong>
+      <span>MongoDB Atlas Cloud (Production Cluster: keerthana)</span>
+    </div>
+    <div class="meta-item">
+      <strong>Core Security</strong>
+      <span>JWT Authentication, Bcryptjs Salted Hashes, Brute-Force Rate Limiting</span>
+    </div>
+    <div class="meta-item">
+      <strong>Hardware & Biometrics</strong>
+      <span>GPS Geofencing, ResNet-34 Face AI, WebAuthn Fingerprint, HMAC SHA-256 QR</span>
+    </div>
+  </div>
+</div>
+
+<!-- CHAPTER 1: ARCHITECTURE OVERVIEW -->
+<h1>Chapter 1. Executive System Architecture</h1>
+<p>
+  <strong>Vidudhi</strong> is an intelligent hostel and residential campus management platform. It replaces outdated paper logbooks and fragmented spreadsheets with a single, synchronized digital environment. Whether a student is checking in for attendance, requesting emergency medical aid, booking laundry slots, or obtaining gate clearance, the system coordinates every action across mobile and desktop devices.
+</p>
+
+<h2>1.1 The 3-Tier Distributed Architecture</h2>
+<p>The platform is architected into three distinct layers to ensure speed, security, and scalability:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width: 22%;">Layer</th>
+      <th style="width: 38%;">Technologies Used</th>
+      <th style="width: 40%;">Role & Human Explanation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Frontend Layer (Client SPA)</strong></td>
+      <td>React 18, Vite 5, Redux Toolkit, React Router 6, Lucide Icons, Vanilla CSS Design Tokens.</td>
+      <td>
+        The interactive portal loaded in the user's browser. It provides instantaneous page navigation without page reloads, role-specific navigation menus, fluid responsive layouts on mobile phones, and client-side biometric matching.
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Backend API Layer (Server)</strong></td>
+      <td>Node.js 18+, Express.js 4, Helmet Security, CORS, Express-Rate-Limit, Morgan Logger.</td>
+      <td>
+        The central brain running in the cloud. It validates user requests, verifies digital signatures, calculates geofence distances, protects endpoints against password guessing (15 attempts/15 min limit), and serves REST API endpoints.
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Database Layer (Persistence)</strong></td>
+      <td>MongoDB Atlas Cloud (Cluster: <code>keerthana</code>), Mongoose 8 Object Data Modeling (ODM).</td>
+      <td>
+        Enterprise cloud database cluster storing structured collections: Users, Rooms, Attendance Records, Complaints, Leave Passes, Visitors, Mess Menus, and System Audit Logs.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>1.2 How the Frontend and Backend Talk to Each Other</h2>
+<p>
+  Communication between the frontend and backend follows a strict, industry-standard REST API pattern:
+</p>
+<ol style="margin-left: 20px; font-size: 9.5pt; color: #334155; margin-bottom: 12px;">
+  <li style="margin-bottom: 6px;">
+    <strong>1. Secure Handshake (Login):</strong> When a user logs in with their roll number or email and password, the frontend transmits an encrypted payload to <code>POST /api/auth/login</code>.
+  </li>
+  <li style="margin-bottom: 6px;">
+    <strong>2. Digital Passport (JWT Token):</strong> The backend verifies the password using salted <code>bcryptjs</code> hashes. If valid, it returns a cryptographically signed <strong>JSON Web Token (JWT)</strong> containing the user's ID, role, and clearance level.
+  </li>
+  <li style="margin-bottom: 6px;">
+    <strong>3. Authenticated Requests:</strong> For all subsequent requests, the frontend automatically attaches this token inside the HTTP header: <code>Authorization: Bearer &lt;JWT_TOKEN&gt;</code>.
+  </li>
+  <li style="margin-bottom: 6px;">
+    <strong>4. Gatekeeping Middleware:</strong> Before executing any database read or write, backend middleware intercepts the request, verifies the signature, confirms user permissions (e.g. preventing a student from accessing admin controls), and only then executes the database query.
+  </li>
+</ol>
+
+<div class="page-break"></div>
+
+<!-- CHAPTER 2: MODULE-BY-MODULE BREAKDOWN -->
+<h1>Chapter 2. Comprehensive Module Breakdown</h1>
+<p>Below is a humanized, detailed breakdown of all 20 modules that power the Vidudhi ecosystem.</p>
+
+<!-- MODULE 1 -->
+<div class="module-card">
+  <div class="module-header">
+    <div class="module-title">1. Authentication & Role-Based Access Control</div>
+    <span class="module-tag tag-core">Security & Access</span>
+  </div>
+  <div class="human-box">
+    <strong>In Simple Words</strong>
+    This is the digital gatekeeper of the hostel. Instead of having confusing login screens with leaked test accounts, the login page is clean, elegant, and simple. It supports 5 distinct hostel roles: Student Resident, Chief Warden, System Admin, Mess Manager, and Campus Doctor.
+  </div>
+  <div class="tech-grid">
+    <div class="tech-block">
+      <strong>Frontend Tech & UX</strong>
+      React form inputs with validation, Redux <code>authSlice</code> persisting session state, fluid 5-role toggle buttons, Google OAuth2 Identity Services SDK.
+    </div>
+    <div class="tech-block">
+      <strong>Backend API & Database</strong>
+      <code>POST /api/auth/login</code>, <code>POST /api/auth/google</code>, <code>GET /api/auth/me</code>.<br>
+      Backed by Mongoose <code>User</code> collection with <code>bcryptjs</code> salted passwords and brute-force rate limiter (15 requests/15 min).
+    </div>
+  </div>
+</div>
+
+<!-- MODULE 2 -->
+<div class="module-card">
+  <div class="module-header">
+    <div class="module-title">2. Campus Overview & Command Center</div>
+    <span class="module-tag tag-core">Analytics</span>
+  </div>
+  <div class="human-box">
+    <strong>In Simple Words</strong>
+    The first screen users see after logging in. For students, it highlights their room number, night roll-call status, outpass approvals, and dinner menu. For the Warden and Admin, it transforms into an executive telemetry cockpit tracking total residents, occupied beds, pending repairs, and active curfew clearances.
+  </div>
+  <div class="tech-grid">
+    <div class="tech-block">
+      <strong>Frontend Tech & UX</strong>
+      Real-time stat widgets, SVG Donut occupancy graphs, quick navigation shortcuts, responsive CSS grid.
+    </div>
+    <div class="tech-block">
+      <strong>Backend API & Database</strong>
+      <code>GET /api/admin/overview</code>, <code>GET /api/user/recently-accessed</code>.<br>
+      Aggregates database totals across <code>Room</code>, <code>Complaint</code>, <code>Attendance</code>, and <code>Leave</code> collections.
+    </div>
+  </div>
+</div>
+
+<!-- MODULE 3 -->
+<div class="module-card">
+  <div class="module-header">
+    <div class="module-title">3. Smart Attendance Desk (GPS Geofencing + Biometrics)</div>
+    <span class="module-tag tag-hardware">Biometrics & AI</span>
+  </div>
+  <div class="human-box">
+    <strong>In Simple Words</strong>
+    Traditional night roll-call requires wardens to walk door-to-door with paper registers between 8:00 PM and 9:30 PM. Vidudhi automates this completely. Students verify attendance on their own phone using two tamper-proof checks: First, GPS confirms they are physically inside the hostel boundary (&le; 300 meters). Second, their camera verifies their face using an AI neural network or their phone's fingerprint sensor.
+  </div>
+  <div class="tech-grid">
+    <div class="tech-block">
+      <strong>Frontend Tech & UX</strong>
+      HTML5 Geolocation API with Haversine distance formula; <code>@vladmandic/face-api</code> (128-dimensional ResNet-34 neural embedding inference with calibrated &lt; 0.48 Euclidean distance); WebAuthn hardware biometric sensor API.
+    </div>
+    <div class="tech-block">
+      <strong>Backend API & Database</strong>
+      <code>POST /api/attendance/check-in</code>, <code>GET /api/attendance/daily</code>, <code>PATCH /api/attendance/override/:id</code>.<br>
+      Records GPS coordinates, face match distance, verification method, and timestamp in <code>Attendance</code> collection.
+    </div>
+  </div>
+</div>
+
+<!-- MODULE 4 -->
+<div class="module-card">
+  <div class="module-header">
+    <div class="module-title">4. Room Allocation & Capacity Hub</div>
+    <span class="module-tag tag-core">Facilities</span>
+  </div>
+  <div class="human-box">
+    <strong>In Simple Words</strong>
+    Keeps track of every single room and bed across Block A and Block B. Shows exactly which beds are occupied, which are vacant, room maintenance status, and roommates. Wardens can reassign beds with a click, while students can see their room details and roommates.
+  </div>
+  <div class="tech-grid">
+    <div class="tech-block">
+      <strong>Frontend Tech & UX</strong>
+      Visual room grid cards, bed allocation slot badges (Bed 1, 2, 3), occupancy filters (Fully Occupied, Partially Filled, Vacant).
+    </div>
+    <div class="tech-block">
+      <strong>Backend API & Database</strong>
+      <code>GET /api/rooms</code>, <code>GET /api/rooms/:id</code>, <code>PATCH /api/rooms/allocate</code>.<br>
+      Backed by <code>Room</code> schema with bed slots, resident roll number relations, and capacity counters.
+    </div>
+  </div>
+</div>
+
+<div class="page-break"></div>
+
+<!-- MODULE 5 -->
+<div class="module-card">
+  <div class="module-header">
+    <div class="module-title">5. Maintenance Grievance & Complaint Desk</div>
+    <span class="module-tag tag-core">Support</span>
+  </div>
+  <div class="human-box">
+    <strong>In Simple Words</strong>
+    When a fan breaks, a tap leaks, or the room Wi-Fi fails, students don't need to chase maintenance staff. They file a digital ticket with a priority tag (High, Medium, Low). Maintenance staff and wardens update the ticket as it moves from "Open" to "In Progress" to "Resolved". Students can only see their own room complaints to protect privacy.
+  </div>
+  <div class="tech-grid">
+    <div class="tech-block">
+      <strong>Frontend Tech & UX</strong>
+      Ticket creation modal, category filter tabs (Electrical, Plumbing, Furniture, Cleanliness, Wi-Fi), high-contrast priority tags.
+    </div>
+    <div class="tech-block">
+      <strong>Backend API & Database</strong>
+      <code>GET /api/complaints</code>, <code>POST /api/complaints</code>, <code>PATCH /api/complaints/:id/status</code>.<br>
+      Backed by Mongoose <code>Complaint</code> model storing ticket IDs, resident IDs, room numbers, and status timestamps.
+    </div>
+  </div>
+</div>
+
+<!-- MODULE 6 -->
+<div class="module-card">
+  <div class="module-header">
+    <div class="module-title">6. Leave Approvals & Cryptographic Turnstile QR Gatepasses</div>
+    <span class="module-tag tag-hardware">Security & QR</span>
+  </div>
+  <div class="human-box">
+    <strong>In Simple Words</strong>
+    When a student needs to leave campus for the weekend or an emergency, they submit a digital leave application. The Chief Warden reviews and approves it. Once approved, the system generates a secure, tamper-proof QR gatepass on the student's phone. Security guards scan this QR code at the turnstile gate for instant clearance.
+  </div>
+  <div class="tech-grid">
+    <div class="tech-block">
+      <strong>Frontend Tech & UX</strong>
+      Leave application form with date pickers; dynamic QR code rendering using <code>qrcode</code> and <code>jsqr</code>; turnstile gate scanner view.
+    </div>
+    <div class="tech-block">
+      <strong>Backend API & Database</strong>
+      <code>GET /api/leave</code>, <code>POST /api/leave</code>, <code>PATCH /api/leave/:id/approve</code>, <code>POST /api/leave/verify/:id</code>.<br>
+      Backed by <code>Leave</code> collection with cryptographic HMAC SHA-256 validation tokens and curfew timers.
+    </div>
+  </div>
+</div>
+
+<!-- MODULE 7 -->
+<div class="module-card">
+  <div class="module-header">
+    <div class="module-title">7. Visitor Management & Security Desk</div>
+    <span class="module-tag tag-core">Campus Security</span>
+  </div>
+  <div class="human-box">
+    <strong>In Simple Words</strong>
+    Ensures safe campus entry for visiting parents, guardians, and official guests. Guards record the visitor's name, phone number, resident they are visiting, and purpose of visit. Generates a digital entry pass and logs exact entry and checkout timestamps.
+  </div>
+  <div class="tech-grid">
+    <div class="tech-block">
+      <strong>Frontend Tech & UX</strong>
+      Searchable visitor table, quick check-in modal, visitor pass card preview, active guest badges.
+    </div>
+    <div class="tech-block">
+      <strong>Backend API & Database</strong>
+      <code>GET /api/visitors</code>, <code>POST /api/visitors</code>, <code>PATCH /api/visitors/:id/checkout</code>.<br>
+      Stored in <code>Visitor</code> collection with relation to visited student roll number and guard check-out timestamps.
+    </div>
+  </div>
+</div>
+
+<!-- MODULE 8 -->
+<div class="module-card">
+  <div class="module-header">
+    <div class="module-title">8. Smart Laundry Hub & Garment Care</div>
+    <span class="module-tag tag-core">Hostel Amenities</span>
+  </div>
+  <div class="human-box">
+    <strong>In Simple Words</strong>
+    Prevents students from fighting over ground-floor washing machines or waiting in long queues. Students can check which machines (Machine 1, 2, 3) and steam iron stations are available, book a slot, and follow a 4-step progress bar (Requested &rarr; In Wash &rarr; Ironed &rarr; Ready for Pickup). All laundry is 100% covered under the annual hostel fee (&cent;0 charge).
+  </div>
+  <div class="tech-grid">
+    <div class="tech-block">
+      <strong>Frontend Tech & UX</strong>
+      Machine availability cards, interactive booking modal, visual stepper timeline, $₹0$ fee notice badge.
+    </div>
+    <div class="tech-block">
+      <strong>Backend API & Database</strong>
+      Synced through Redux store and user records, logging wash cycles, scheduled slots, and machine maintenance flags.
+    </div>
+  </div>
+</div>
+
+<div class="page-break"></div>
+
+<!-- MODULE 9 -->
+<div class="module-card">
+  <div class="module-header">
+    <div class="module-title">9. Mess Operations & Dining Feedback</div>
+    <span class="module-tag tag-core">Dining</span>
+  </div>
+  <div class="human-box">
+    <strong>In Simple Words</strong>
+    Displays the complete 7-day digital dining menu (Breakfast, Lunch, Evening Snacks, and Dinner). Students can rate each meal (1 to 5 stars) and submit feedback directly to the kitchen. A dedicated Mess Manager login allows kitchen staff to update tomorrow's menu and review student meal ratings without accessing student grades or personal data.
+  </div>
+  <div class="tech-grid">
+    <div class="tech-block">
+      <strong>Frontend Tech & UX</strong>
+      Tabbed weekly schedule, interactive 5-star rating controls, special dish photo tags, add-on order toggles.
+    </div>
+    <div class="tech-block">
+      <strong>Backend API & Database</strong>
+      <code>GET /api/mess/menu</code>, <code>POST /api/mess/feedback</code>, <code>PATCH /api/mess/menu/:day</code>.<br>
+      Backed by <code>MessMenu</code> and <code>MessFeedback</code> collections storing daily meal options, ratings, and dietary comments.
+    </div>
+  </div>
+</div>
+
+<!-- MODULE 10 -->
+<div class="module-card">
+  <div class="module-header">
+    <div class="module-title">10. Hostel Accounts & Official Fee Receipts</div>
+    <span class="module-tag tag-core">Finance</span>
+  </div>
+  <div class="human-box">
+    <strong>In Simple Words</strong>
+    A crystal-clear financial breakdown for students and parents. Shows hostel room rent, mess charges, and annual amenity fees. Students can review paid statements, check pending dues, and download official fee receipts with official transaction reference IDs.
+  </div>
+  <div class="tech-grid">
+    <div class="tech-block">
+      <strong>Frontend Tech & UX</strong>
+      Ledger statements table, payment method selector, status pills (Paid, Overdue, Processing), printable receipt view.
+    </div>
+    <div class="tech-block">
+      <strong>Backend API & Database</strong>
+      Integrated with resident account profile; calculates fee balances, receipt IDs, and transaction timestamps.
+    </div>
+  </div>
+</div>
+
+<!-- MODULE 11 -->
+<div class="module-card">
+  <div class="module-header">
+    <div class="module-title">11. Campus Health & OPD Clinic</div>
+    <span class="module-tag tag-core">Healthcare</span>
+  </div>
+  <div class="human-box">
+    <strong>In Simple Words</strong>
+    Hostel healthcare made private and accessible. Students can view campus doctor duty hours, check the live OPD token waiting queue, and book a consultation. Crucially, student medical privacy is strictly enforced: students only see their own prescriptions and current queue number, while doctors and wardens see clinical consultation records.
+  </div>
+  <div class="tech-grid">
+    <div class="tech-block">
+      <strong>Frontend Tech & UX</strong>
+      Doctor schedule cards, real-time token queue number badge, private personal prescription ledger, symptom logger.
+    </div>
+    <div class="tech-block">
+      <strong>Backend API & Database</strong>
+      Linked with user roll numbers and doctor staff profiles; logs token issuance, doctor remarks, and medicine clearances.
+    </div>
+  </div>
+</div>
+
+<!-- MODULE 12 -->
+<div class="module-card">
+  <div class="module-header">
+    <div class="module-title">12. Emergency SOS Distress Monitor</div>
+    <span class="module-tag tag-sos">Life Safety</span>
+  </div>
+  <div class="human-box">
+    <strong>In Simple Words</strong>
+    A life-safety emergency system. In any crisis (medical emergency, fire, physical distress), clicking the bright Tomato Red (#FF6347) SOS button instantly dispatches the resident's room number, GPS location, and distress message to the Chief Warden and campus ambulance. If the student's Wi-Fi drops, the SOS modal stores the distress trigger locally in offline queue and dispatches the moment connection returns.
+  </div>
+  <div class="tech-grid">
+    <div class="tech-block">
+      <strong>Frontend Tech & UX</strong>
+      Emergency modal with high-contrast red styling; Web Audio API audible pulse chirp; offline-first localStorage queue listener; quick phone dialer (108 Ambulance, 101 Fire, 1091 Women Safety).
+    </div>
+    <div class="tech-block">
+      <strong>Backend API & Database</strong>
+      Real-time distress telemetry dispatch; logs distress incident to Warden Command Center and database audit log.
+    </div>
+  </div>
+</div>
+
+<div class="page-break"></div>
+
+<!-- MODULE 13 -->
+<div class="module-card">
+  <div class="module-header">
+    <div class="module-title">13. AI Hostel Copilot</div>
+    <span class="module-tag tag-ai">Artificial Intelligence</span>
+  </div>
+  <div class="human-box">
+    <strong>In Simple Words</strong>
+    A 24/7 AI-powered residential assistant accessible via a dedicated page or floating chat widget. Students can ask questions in natural English like "What is the gate closing time on Saturday?", "What are the gym hours?", or "Can I borrow sports equipment?". The AI answers instantly based on the official college hostel rulebook, and even provides study focus tips and motivation.
+  </div>
+  <div class="tech-grid">
+    <div class="tech-block">
+      <strong>Frontend Tech & UX</strong>
+      Puter.js AI SDK integration; floating chat drawer with minimize/maximize controls; instant keyword knowledge base fallback.
+    </div>
+    <div class="tech-block">
+      <strong>Backend API & Database</strong>
+      <code>POST /api/chatbot/query</code>.<br>
+      Hostel rulebook embeddings, conversational context memory, and safety filters.
+    </div>
+  </div>
+</div>
+
+<!-- MODULE 14 -->
+<div class="module-card">
+  <div class="module-header">
+    <div class="module-title">14. Hostel Daily Forecaster (Simulation Engine)</div>
+    <span class="module-tag tag-ai">Algorithmic Telemetry</span>
+  </div>
+  <div class="human-box">
+    <strong>In Simple Words</strong>
+    A resource management tool for the Chief Warden. Rather than guessing how much electricity, water, or food the hostel will consume tomorrow, the warden adjusts sliders for occupancy and weather (e.g. 90% occupancy on a hot summer day). The engine calculates expected electricity (kWh), water usage (Liters), mess meal portions (plates), and generator fuel needs, saving thousands of rupees in wasted resources.
+  </div>
+  <div class="tech-grid">
+    <div class="tech-block">
+      <strong>Frontend Tech & UX</strong>
+      Interactive parameter sliders (occupancy, temperature, study hours); visual projected telemetry cards; resource breakdown bars.
+    </div>
+    <div class="tech-block">
+      <strong>Backend API & Database</strong>
+      <code>POST /api/simulation/forecast</code>, <code>GET /api/simulation/scenarios</code>.<br>
+      Mathematical demand modeling algorithms calculating utility consumption matrices based on historical occupancy.
+    </div>
+  </div>
+</div>
+
+<!-- MODULE 15 -->
+<div class="module-card">
+  <div class="module-header">
+    <div class="module-title">15. Digital Campus Map & Navigation</div>
+    <span class="module-tag tag-core">Navigation</span>
+  </div>
+  <div class="human-box">
+    <strong>In Simple Words</strong>
+    Helps junior students and visitors orient themselves within the campus. An interactive visual map displays Block A, Block B, the central dining mess, sports ground, health clinic, laundry room, library, and the security main gate with live opening hours and status tags.
+  </div>
+  <div class="tech-grid">
+    <div class="tech-block">
+      <strong>Frontend Tech & UX</strong>
+      Vector SVG campus layout with interactive facility nodes, hover tooltips, status pills (Open, Closed, Restricted).
+    </div>
+    <div class="tech-block">
+      <strong>Backend API & Database</strong>
+      Integrated with facility operating hours and campus coordinates config (<code>HOSTEL_LAT</code>, <code>HOSTEL_LNG</code>).
+    </div>
+  </div>
+</div>
+
+<!-- MODULE 16 -->
+<div class="module-card">
+  <div class="module-header">
+    <div class="module-title">16. Facilities & Sports Hub</div>
+    <span class="module-tag tag-core">Recreation</span>
+  </div>
+  <div class="human-box">
+    <strong>In Simple Words</strong>
+    Manages sports gear and fitness gym access. Students can borrow badminton sets, cricket kits, basketballs, or table tennis gear with automatic checkout countdown timers (2-4 hours). They can also reserve 45-minute campus gym workout slots to prevent overcrowding in the weight room.
+  </div>
+  <div class="tech-grid">
+    <div class="tech-block">
+      <strong>Frontend Tech & UX</strong>
+      Gear catalog cards, live borrow timer counters, gym workout slot reservation toggles, equipment condition badges.
+    </div>
+    <div class="tech-block">
+      <strong>Backend API & Database</strong>
+      <code>GET /api/equipment</code>, <code>POST /api/equipment/borrow</code>.<br>
+      Backed by <code>Equipment</code> collection tracking available inventory count, borrowed user roll numbers, and return dues.
+    </div>
+  </div>
+</div>
+
+<div class="page-break"></div>
+
+<!-- MODULE 17 -->
+<div class="module-card">
+  <div class="module-header">
+    <div class="module-title">17. Lost & Found Campus Registry</div>
+    <span class="module-tag tag-core">Community</span>
+  </div>
+  <div class="human-box">
+    <strong>In Simple Words</strong>
+    A digital notice board for lost and found campus belongings. If a student finds keys, an ID card, a watch, or a charger in the study hall, they can post a photo and location. The rightful owner can claim it by verifying identifying details with the finder or warden.
+  </div>
+  <div class="tech-grid">
+    <div class="tech-block">
+      <strong>Frontend Tech & UX</strong>
+      Card feed with photo previews, item category tags, report modal with image attachment, status filters (Reported, Claimed).
+    </div>
+    <div class="tech-block">
+      <strong>Backend API & Database</strong>
+      Stored in database collection linking reporting student, item description, location found, and resolved timestamp.
+    </div>
+  </div>
+</div>
+
+<!-- MODULE 18 -->
+<div class="module-card">
+  <div class="module-header">
+    <div class="module-title">18. Campus Notice Board & Circulars</div>
+    <span class="module-tag tag-core">Announcements</span>
+  </div>
+  <div class="human-box">
+    <strong>In Simple Words</strong>
+    Official broadcast channel for Chief Warden announcements, holiday hostel closures, maintenance schedules, and curfew alerts. Notices appear instantly with high-contrast priority tags. An unread badge counter in the top bar ensures students never miss a critical notice.
+  </div>
+  <div class="tech-grid">
+    <div class="tech-block">
+      <strong>Frontend Tech & UX</strong>
+      Chronological circular cards, priority badges (Urgent, Notice, General), notification count badge on bell icon.
+    </div>
+    <div class="tech-block">
+      <strong>Backend API & Database</strong>
+      <code>GET /api/notifications</code>, <code>POST /api/notifications</code>.<br>
+      Mongoose <code>Notification</code> schema storing publisher ID, broadcast scope, title, message body, and publish date.
+    </div>
+  </div>
+</div>
+
+<!-- MODULE 19 -->
+<div class="module-card">
+  <div class="module-header">
+    <div class="module-title">19. User Directory & Administrative Controls</div>
+    <span class="module-tag tag-core">Administration</span>
+  </div>
+  <div class="human-box">
+    <strong>In Simple Words</strong>
+    The administrative backbone of the hostel. Allows administrators to enroll new students, register staff, update room assignments, and deactivate graduated residents. Strict role separation ensures that the Warden has read-only lookup access, while full editing and deleting powers are restricted to System Administrators.
+  </div>
+  <div class="tech-grid">
+    <div class="tech-block">
+      <strong>Frontend Tech & UX</strong>
+      Searchable user data table, role filter dropdown, add user modal with input validation, lock indicators for non-admins.
+    </div>
+    <div class="tech-block">
+      <strong>Backend API & Database</strong>
+      <code>GET /api/admin/users</code>, <code>POST /api/admin/users</code>, <code>DELETE /api/admin/users/:id</code>.<br>
+      Protected by admin authorization middleware; directly performs CRUD operations on the Mongoose <code>User</code> collection.
+    </div>
+  </div>
+</div>
+
+<!-- MODULE 20 -->
+<div class="module-card">
+  <div class="module-header">
+    <div class="module-title">20. System Personalization, Theming & Multi-Language</div>
+    <span class="module-tag tag-core">Personalization</span>
+  </div>
+  <div class="human-box">
+    <strong>In Simple Words</strong>
+    Provides an inclusive, accessible user experience tailored to every resident. Users can switch between dark and light modes, choose modern leafy-green accent palettes, pick button styles (Modern Solid or Clean Outline), customize typography fonts, and switch languages between English, Tamil, and Hindi.
+  </div>
+  <div class="tech-grid">
+    <div class="tech-block">
+      <strong>Frontend Tech & UX</strong>
+      CSS Custom Properties (tokens), HTML <code>data-font</code> and <code>dir</code> attributes, Redux <code>uiSlice</code>, local storage persistence.
+    </div>
+    <div class="tech-block">
+      <strong>Backend API & Database</strong>
+      <code>PATCH /api/user/language</code>.<br>
+      Saves the user's preferred interface language and display settings in their database profile.
+    </div>
+  </div>
+</div>
+
+<div class="page-break"></div>
+
+<!-- CHAPTER 3: API ENDPOINTS & BACKEND MAP -->
+<h1>Chapter 3. Complete Backend API Route Map</h1>
+<p>
+  Below is the complete catalogue of REST API endpoints exposed by the Node.js/Express server and consumed by the React frontend:
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width: 12%;">Method</th>
+      <th style="width: 32%;">Endpoint URL</th>
+      <th style="width: 26%;">Authorized Role</th>
+      <th style="width: 30%;">Database Operation / Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="method-post">POST</span></td>
+      <td><code>/api/auth/login</code></td>
+      <td>Public (Rate limited 15/15m)</td>
+      <td>Validates credentials, returns signed JWT</td>
+    </tr>
+    <tr>
+      <td><span class="method-post">POST</span></td>
+      <td><code>/api/auth/google</code></td>
+      <td>Public</td>
+      <td>Verifies Google OAuth2 ID token</td>
+    </tr>
+    <tr>
+      <td><span class="method-get">GET</span></td>
+      <td><code>/api/auth/me</code></td>
+      <td>All Logged-in Roles</td>
+      <td>Fetches current user profile from JWT session</td>
+    </tr>
+    <tr>
+      <td><span class="method-get">GET</span></td>
+      <td><code>/api/admin/overview</code></td>
+      <td>Warden, Admin</td>
+      <td>Aggregates room capacity, leaves, complaints</td>
+    </tr>
+    <tr>
+      <td><span class="method-get">GET</span></td>
+      <td><code>/api/admin/users</code></td>
+      <td>Warden, Admin</td>
+      <td>Retrieves directory of students and staff</td>
+    </tr>
+    <tr>
+      <td><span class="method-post">POST</span></td>
+      <td><code>/api/admin/users</code></td>
+      <td>Admin Only</td>
+      <td>Enrolls new resident with encrypted password</td>
+    </tr>
+    <tr>
+      <td><span class="method-delete">DELETE</span></td>
+      <td><code>/api/admin/users/:id</code></td>
+      <td>Admin Only</td>
+      <td>Removes resident record and frees allocated bed</td>
+    </tr>
+    <tr>
+      <td><span class="method-post">POST</span></td>
+      <td><code>/api/attendance/check-in</code></td>
+      <td>Student</td>
+      <td>Validates GPS coordinates & FaceID vector</td>
+    </tr>
+    <tr>
+      <td><span class="method-get">GET</span></td>
+      <td><code>/api/attendance/daily</code></td>
+      <td>Warden, Admin</td>
+      <td>Returns roll-call roster for current date</td>
+    </tr>
+    <tr>
+      <td><span class="method-patch">PATCH</span></td>
+      <td><code>/api/attendance/override/:id</code></td>
+      <td>Warden Only</td>
+      <td>Manual override for medical or duty absence</td>
+    </tr>
+    <tr>
+      <td><span class="method-get">GET</span></td>
+      <td><code>/api/rooms</code></td>
+      <td>Student, Warden, Admin</td>
+      <td>Returns room list, occupancy, and bed slots</td>
+    </tr>
+    <tr>
+      <td><span class="method-patch">PATCH</span></td>
+      <td><code>/api/rooms/allocate</code></td>
+      <td>Warden, Admin</td>
+      <td>Assigns resident roll number to specific bed</td>
+    </tr>
+    <tr>
+      <td><span class="method-get">GET</span></td>
+      <td><code>/api/complaints</code></td>
+      <td>Student (own), Warden (all)</td>
+      <td>Fetches maintenance tickets with status tags</td>
+    </tr>
+    <tr>
+      <td><span class="method-post">POST</span></td>
+      <td><code>/api/complaints</code></td>
+      <td>Student</td>
+      <td>Submits a new maintenance grievance</td>
+    </tr>
+    <tr>
+      <td><span class="method-patch">PATCH</span></td>
+      <td><code>/api/complaints/:id/status</code></td>
+      <td>Warden, Admin</td>
+      <td>Updates ticket to In Progress or Resolved</td>
+    </tr>
+    <tr>
+      <td><span class="method-get">GET</span></td>
+      <td><code>/api/leave</code></td>
+      <td>Student (own), Warden (all)</td>
+      <td>Lists outpass and overnight leave applications</td>
+    </tr>
+    <tr>
+      <td><span class="method-post">POST</span></td>
+      <td><code>/api/leave</code></td>
+      <td>Student</td>
+      <td>Applies for digital leave with parent intimation</td>
+    </tr>
+    <tr>
+      <td><span class="method-patch">PATCH</span></td>
+      <td><code>/api/leave/:id/approve</code></td>
+      <td>Warden Only</td>
+      <td>Approves leave and issues HMAC QR gatepass</td>
+    </tr>
+    <tr>
+      <td><span class="method-post">POST</span></td>
+      <td><code>/api/leave/verify/:id</code></td>
+      <td>Warden, Security Guard</td>
+      <td>Scans and clears QR token at gate turnstile</td>
+    </tr>
+    <tr>
+      <td><span class="method-get">GET</span></td>
+      <td><code>/api/visitors</code></td>
+      <td>Warden, Admin</td>
+      <td>Fetches active campus guest log</td>
+    </tr>
+    <tr>
+      <td><span class="method-post">POST</span></td>
+      <td><code>/api/visitors</code></td>
+      <td>Warden, Security Guard</td>
+      <td>Registers visiting parents or guests</td>
+    </tr>
+    <tr>
+      <td><span class="method-get">GET</span></td>
+      <td><code>/api/mess/menu</code></td>
+      <td>All Roles</td>
+      <td>Returns 7-day breakfast, lunch, dinner schedule</td>
+    </tr>
+    <tr>
+      <td><span class="method-post">POST</span></td>
+      <td><code>/api/mess/feedback</code></td>
+      <td>Student</td>
+      <td>Logs 5-star meal ratings and kitchen comments</td>
+    </tr>
+    <tr>
+      <td><span class="method-post">POST</span></td>
+      <td><code>/api/simulation/forecast</code></td>
+      <td>Warden, Admin</td>
+      <td>Calculates electricity, water, meal predictions</td>
+    </tr>
+    <tr>
+      <td><span class="method-post">POST</span></td>
+      <td><code>/api/chatbot/query</code></td>
+      <td>Student</td>
+      <td>NLP search over official hostel rulebook</td>
+    </tr>
+    <tr>
+      <td><span class="method-get">GET</span></td>
+      <td><code>/api/notifications</code></td>
+      <td>All Roles</td>
+      <td>Fetches official circulars and curfew updates</td>
+    </tr>
+    <tr>
+      <td><span class="method-post">POST</span></td>
+      <td><code>/api/notifications</code></td>
+      <td>Warden, Admin</td>
+      <td>Broadcasts new circular to all residents</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="footer-note">
+  Vidudhi Smart Residence & Hostel Living Platform &bull; System Architecture & Modules Guide &bull; Generated for Technical Evaluation &bull; Release 2.0
+</div>
+
+</body>
+</html>
