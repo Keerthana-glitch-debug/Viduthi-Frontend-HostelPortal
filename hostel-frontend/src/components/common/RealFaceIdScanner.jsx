@@ -48,6 +48,9 @@ function playMismatchAlert() {
   } catch {}
 }
 
+// Biometric Matching Threshold: 0.48 Euclidean distance (calibrated strict 1:1 verification, tighter than loose 0.50)
+export const FACE_MATCH_THRESHOLD = 0.48
+
 export default function RealFaceIdScanner({
   onVerified,
   studentName = 'Resident',
@@ -256,17 +259,17 @@ export default function RealFaceIdScanner({
               const distance = faceapi.euclideanDistance(liveDescriptor, activeEnrolledDescriptor)
               
               // Mathematically calibrated biometric confidence:
-              // Standard ResNet 128-D Euclidean distance threshold is 0.48
+              // Calibrated ResNet 128-D Euclidean distance threshold is FACE_MATCH_THRESHOLD (0.48)
               let confidenceVal = 0
-              if (distance < 0.48) {
+              if (distance < FACE_MATCH_THRESHOLD) {
                 // Verified genuine match: scales smoothly from 85% to 99%
-                confidenceVal = Math.round(99 - (distance / 0.48) * 14)
+                confidenceVal = Math.round(99 - (distance / FACE_MATCH_THRESHOLD) * 14)
               } else {
-                confidenceVal = Math.max(0, Math.round((1 - (distance - 0.48) / 0.22) * 50))
+                confidenceVal = Math.max(0, Math.round((1 - (distance - FACE_MATCH_THRESHOLD) / 0.22) * 50))
               }
               setMatchScore(confidenceVal)
 
-              if (distance < 0.48) {
+              if (distance < FACE_MATCH_THRESHOLD) {
                 // GENUINE MATCH CONFIRMED
                 setMismatchReason('')
                 handleMatchSuccess(video, liveDescriptor, distance, confidenceVal)

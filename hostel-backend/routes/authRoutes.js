@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, googleLogin, getMe, updateProfile, changePassword } = require('../controllers/authController');
+const { login, googleLogin, getMe, updateProfile, changePassword } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 
 const optionalProtect = async (req, res, next) => {

@@ -8,7 +8,7 @@ router.use(protect);
 
 router.get('/', getLeaveRequests);
 router.post('/', createLeaveRequest);
-router.patch('/:id', authorize('warden', 'admin'), updateLeaveStatus);
-router.post('/verify/:id', authorize('warden', 'admin', 'staff'), verifyGatePass);
+router.patch('/:id', authorize('warden', 'admin', 'doctor'), updateLeaveStatus);
+router.post('/verify/:id', authorize('warden', 'admin', 'doctor', 'staff'), verifyGatePass);
 
 module.exports = router;

@@ -20,6 +20,6 @@ router.patch('/', protect, markAllRead);
 // Real-Time Emergency SOS routes
 router.get('/sos', getActiveSosAlerts);
 router.post('/sos', protect, triggerSosAlert);
-router.patch('/sos/:id/resolve', protect, authorize('warden', 'admin', 'staff'), resolveSosAlert);
+router.patch('/sos/:id/resolve', protect, authorize('warden', 'admin', 'doctor', 'staff'), resolveSosAlert);
 
 module.exports = router;

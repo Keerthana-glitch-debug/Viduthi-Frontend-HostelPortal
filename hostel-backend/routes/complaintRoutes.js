@@ -8,6 +8,6 @@ router.use(protect);
 
 router.get('/', getComplaints);
 router.post('/', createComplaint);
-router.patch('/:id', authorize('warden', 'admin', 'staff'), updateComplaint);
+router.patch('/:id', authorize('warden', 'admin', 'doctor', 'staff'), updateComplaint);
 
 module.exports = router;

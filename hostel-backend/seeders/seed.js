@@ -23,8 +23,8 @@ const { HOSTEL_DEFAULT_LAT, HOSTEL_DEFAULT_LNG } = require('../utils/geofence');
 
 const seedDatabase = async () => {
   try {
-    const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/keerthana';
-    console.log(`[Seeder] Connecting to MongoDB (Cluster: keerthana)...`);
+    const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/vidudhi';
+    console.log(`[Seeder] Connecting to MongoDB (Cluster0: vidudhi)...`);
     await mongoose.connect(uri);
     console.log(`[Seeder] Connected to database: ${mongoose.connection.name}`);
 

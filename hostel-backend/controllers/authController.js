@@ -22,72 +22,8 @@ const generateToken = (user) => {
   );
 };
 
-// @desc    Register a new user
-// @route   POST /api/auth/register
-// @access  Public
-exports.register = async (req, res) => {
-  try {
-    const { name, email, password, role, rollNo, staffId, roomNumber, block, department, phone, language } = req.body;
-
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
-    if (existingUser) {
-      return res.status(400).json({ success: false, message: 'User with this email already exists.' });
-    }
-
-    if (rollNo) {
-      const existingRoll = await User.findOne({ rollNo });
-      if (existingRoll) {
-        return res.status(400).json({ success: false, message: 'Student roll number already registered.' });
-      }
-    }
-
-    const user = await User.create({
-      name,
-      email: email.toLowerCase(),
-      password,
-      role: role || 'student',
-      rollNo,
-      staffId,
-      roomNumber,
-      block,
-      department,
-      phone,
-      language: language || 'en',
-    });
-
-    const token = generateToken(user);
-
-    await recordActivity({
-      user,
-      action: 'REGISTERED_ACCOUNT',
-      resourceType: 'profile',
-      title: `New Account Created: ${user.name} (${user.role})`,
-      route: '/login',
-    });
-
-    res.status(201).json({
-      success: true,
-      message: 'Account registered successfully.',
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        rollNo: user.rollNo,
-        staffId: user.staffId,
-        roomNumber: user.roomNumber,
-        block: user.block,
-        department: user.department,
-        avatar: user.avatar,
-        language: user.language,
-      },
-    });
-  } catch (error) {
-    console.error('[Register Error]', error);
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
+// Public registration is disabled by policy (administered via POST /api/admin/users).
+// Dead register() controller endpoint removed.
 
 // @desc    Sign in with Email/RollNo/StaffId and Password
 // @route   POST /api/auth/login
@@ -107,16 +43,52 @@ exports.login = async (req, res) => {
     const trimmedId = (loginId || '').trim();
     const loginLower = trimmedId.toLowerCase();
 
-    // Flexible identifier lookup: supports email, rollNo, staffId, as well as role aliases (admin, warden, doctor, mess)
+    // Deterministic identifier lookup: supports email, rollNo, staffId, as well as designated role aliases
     let userQuery;
     if (loginLower === 'admin' || loginLower === 'administrator') {
-      userQuery = { role: 'admin' };
+      userQuery = {
+        $or: [
+          { email: 'admin.venkatesh@vidudhi.edu' },
+          { email: 'keerthana020706@gmail.com' },
+          { email: 'keerthana@gmail.com' },
+          { role: 'admin' },
+        ],
+      };
     } else if (loginLower === 'warden') {
-      userQuery = { role: 'warden' };
+      // Deterministically target the designated Chief Warden / Super Admin (keerthana)
+      userQuery = {
+        $or: [
+          { email: 'keerthana020706@gmail.com' },
+          { email: 'keerthana@gmail.com' },
+          { staffId: 'WRD-1001' },
+          { role: 'warden' },
+        ],
+      };
     } else if (loginLower === 'doctor') {
-      userQuery = { role: 'doctor' };
+      userQuery = {
+        $or: [
+          { email: 'doctor.madhu@vidudhi.edu' },
+          { staffId: 'DOC-201' },
+          { role: 'doctor' },
+        ],
+      };
     } else if (loginLower === 'mess' || loginLower === 'mess_manager') {
-      userQuery = { role: 'mess_manager' };
+      userQuery = {
+        $or: [
+          { email: 'muthumari@vidudhi.edu' },
+          { staffId: 'MESS-101' },
+          { role: 'mess_manager' },
+        ],
+      };
+    } else if (loginLower === 'keerthana@gmail.com' || loginLower === 'keerthana020706@gmail.com') {
+      // Both keerthana@gmail.com and keerthana020706@gmail.com resolve to the primary Warden account
+      userQuery = {
+        $or: [
+          { email: 'keerthana020706@gmail.com' },
+          { email: 'keerthana@gmail.com' },
+          { staffId: 'WRD-1001' },
+        ],
+      };
     } else {
       userQuery = {
         $or: [

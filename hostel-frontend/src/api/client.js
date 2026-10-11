@@ -1,7 +1,21 @@
 // src/api/client.js — unified HTTP client for Vidudhi Hostel Resident Portal backend
 // Strictly authenticates requests with JWT Bearer tokens and propagates genuine server errors
 
-const BASE_URL = import.meta.env.VITE_API_URL || '/api'
+// Dynamic Base URL resolver:
+// In deployed environments (Render, Cloud, mobile web) or production builds,
+// requests must target relative '/api' to avoid localhost connection failures.
+function resolveBaseUrl() {
+  const envUrl = import.meta.env.VITE_API_URL
+  if (typeof window !== 'undefined' && window.location) {
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    if (!isLocalhost && (envUrl?.includes('localhost') || envUrl?.includes('127.0.0.1'))) {
+      return '/api'
+    }
+  }
+  return envUrl || '/api'
+}
+
+const BASE_URL = resolveBaseUrl()
 
 function getAuthHeader() {
   try {

@@ -78,11 +78,12 @@ app.get('/api/health', (req, res) => {
     status: 'OK',
     service: 'Vidudhi Hostel Resident Portal API',
     database: {
-      cluster: 'keerthana',
+      cluster: 'Cluster0',
+      database: mongoose.connection.name || 'vidudhi',
       state: states[dbStatus] || 'Unknown',
-      host: mongoose.connection.host || '127.0.0.1',
+      host: mongoose.connection.host || 'cluster0.92rctps.mongodb.net',
     },
-    version: '1.0.0',
+    version: '2.0.0',
     timestamp: new Date().toISOString(),
   });
 });
@@ -91,13 +92,12 @@ app.get('/api/health', (req, res) => {
 app.get('/api', (req, res) => {
   res.status(200).json({
     portal: 'Vidudhi Smart Residence & Campus Living Platform',
-    version: '1.0.0',
-    databaseCluster: 'keerthana',
+    version: '2.0.0',
+    databaseCluster: 'Cluster0 (host: cluster0.92rctps.mongodb.net, database: vidudhi)',
     endpoints: {
       health: 'GET /api/health',
       auth: {
         login: 'POST /api/auth/login',
-        register: 'POST /api/auth/register',
         googleOAuth: 'POST /api/auth/google',
         me: 'GET /api/auth/me',
         oauthConfig: 'GET /api/auth/oauth/config',
@@ -105,8 +105,14 @@ app.get('/api', (req, res) => {
       admin: {
         overview: 'GET /api/admin/overview',
         users: 'GET /api/admin/users',
-        createUser: 'POST /api/admin/users',
+        createUser: 'POST /api/admin/users (Hostel Warden / Administrator user enrollment)',
         auditLogs: 'GET /api/admin/logs',
+      },
+      clinic: {
+        status: 'GET /api/clinic/status',
+        updateStatus: 'POST /api/clinic/status (Doctor / Warden availability)',
+        queue: 'GET /api/clinic/queue',
+        consultation: 'POST /api/clinic/consultation',
       },
       attendance: {
         checkIn: 'POST /api/attendance/check-in (GPS + Biometric + HMAC SHA-256)',
@@ -148,6 +154,7 @@ app.use('/api/visitors', require('./routes/visitorRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/equipment', require('./routes/equipmentRoutes'));
 app.use('/api/mess', require('./routes/messRoutes'));
+app.use('/api/clinic', require('./routes/clinicRoutes'));
 
 // Serve static frontend assets in production (Unified full-stack deployment)
 const frontendDistPath = path.join(__dirname, '../hostel-frontend/dist');
@@ -182,7 +189,7 @@ const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
   console.log(`=======================================================`);
   console.log(` Vidudhi Hostel Resident Portal Server running on :${PORT}`);
-  console.log(` Database Target: keerthana MongoDB Cluster`);
+  console.log(` Database Target: MongoDB Atlas Cluster0 (Database: vidudhi)`);
   console.log(` Non-CRUD GPS Geofence: ${process.env.HOSTEL_LAT || 13.0827}° N, ${process.env.HOSTEL_LNG || 80.2707}° E`);
   console.log(`=======================================================`);
 });
