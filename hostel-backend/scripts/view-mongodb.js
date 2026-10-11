@@ -3,9 +3,10 @@ try {
   dns.setServers(['8.8.8.8', '8.8.4.4']);
 } catch (e) {}
 
+const path = require('path');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const User = require('../models/User');
 const Attendance = require('../models/Attendance');
@@ -15,11 +16,11 @@ const LeaveRequest = require('../models/LeaveRequest');
 const Room = require('../models/Room');
 
 async function viewDatabase() {
-  const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/keerthana';
+  const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/vidudhi';
 
   console.log('\n===============================================================');
   console.log('       VIDUDHI PORTAL — LIVE MONGODB INSPECTOR');
-  console.log(` Target Cluster / Database: keerthana`);
+  console.log(` Target Cluster / Database: Cluster0 (vidudhi)`);
   console.log(` Connection URI: ${uri}`);
   console.log('===============================================================\n');
 
