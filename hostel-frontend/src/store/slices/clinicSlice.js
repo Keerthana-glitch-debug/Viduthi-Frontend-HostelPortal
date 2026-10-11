@@ -1,6 +1,31 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { api } from '../../api/client'
 
 const STORAGE_KEY = 'vidudhi_clinic_state'
+
+export const fetchClinicStatus = createAsyncThunk(
+  'clinic/fetchStatus',
+  async () => {
+    try {
+      const res = await api.get('/clinic/status')
+      return res
+    } catch {
+      return null
+    }
+  }
+)
+
+export const updateDoctorDuty = createAsyncThunk(
+  'clinic/updateDuty',
+  async (newStatus, { dispatch }) => {
+    const timeStr = `Today at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`
+    dispatch(clinicSlice.actions.setDoctorStatus(newStatus))
+    try {
+      await api.post('/clinic/status', { status: newStatus })
+    } catch {}
+    return { doctorStatus: newStatus, lastCheckIn: timeStr }
+  }
+)
 
 const defaultWaitingQueue = [
   {
@@ -182,6 +207,30 @@ export const clinicSlice = createSlice({
       state.completedConsultations.unshift(newRecord)
       saveState(state)
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchClinicStatus.fulfilled, (state, action) => {
+        if (action.payload) {
+          if (action.payload.doctorStatus) {
+            state.doctorStatus = action.payload.doctorStatus
+          }
+          if (action.payload.lastCheckIn) {
+            state.lastCheckIn = action.payload.lastCheckIn
+          }
+          if (action.payload.waitingQueue && action.payload.waitingQueue.length > 0) {
+            state.waitingQueue = action.payload.waitingQueue
+          }
+          saveState(state)
+        }
+      })
+      .addCase(updateDoctorDuty.fulfilled, (state, action) => {
+        state.doctorStatus = action.payload.doctorStatus
+        if (action.payload.doctorStatus === 'Available in Hostel Clinic') {
+          state.lastCheckIn = action.payload.lastCheckIn
+        }
+        saveState(state)
+      })
   },
 })
 

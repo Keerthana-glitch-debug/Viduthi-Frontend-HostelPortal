@@ -61,6 +61,7 @@ const ADMIN_NAV = [
 
 const MESS_NAV = [
   { to: '/app/mess', label: 'Mess Menu & Feedback', icon: UtensilsCrossed, end: true },
+  { to: '/app/simulation', label: 'Daily Forecaster', icon: Activity },
   { to: '/app/settings', label: 'Settings', icon: SettingsIcon },
 ]
 

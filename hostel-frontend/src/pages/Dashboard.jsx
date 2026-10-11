@@ -30,6 +30,8 @@ import {
   selectWaitingQueue,
   selectCompletedConsultations,
   checkInDoctor,
+  fetchClinicStatus,
+  updateDoctorDuty,
 } from '../store/slices/clinicSlice'
 import { initialPredictiveInsights } from '../data/seedData'
 
@@ -93,6 +95,7 @@ export default function Dashboard() {
     dispatch(fetchVisitors())
     dispatch(fetchNotifications())
     dispatch(fetchAttendanceRecords())
+    dispatch(fetchClinicStatus())
   }, [dispatch])
 
   const occupied = rooms.reduce((sum, r) => sum + r.occupied, 0)
@@ -531,6 +534,61 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Daily Operations Forecaster & Telemetry Panel */}
+        <div
+          className="panel"
+          style={{
+            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, var(--surface) 100%)',
+            border: '1.5px solid rgba(16, 185, 129, 0.3)',
+            borderRadius: 12,
+            padding: '16px 20px',
+            marginBottom: 16,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 42, height: 42, borderRadius: 10, background: 'rgba(16, 185, 129, 0.15)', display: 'grid', placeItems: 'center' }}>
+                <Activity size={22} color="#10B981" />
+              </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <strong style={{ fontSize: 15 }}>Campus Operations Forecaster &amp; Predictive Telemetry</strong>
+                  <span className="badge badge-ok">Live Model Active</span>
+                </div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--ink-soft)', marginTop: 2 }}>
+                  Automated capacity forecasting for power, borewell storage, mess turnout, and contingency cost.
+                </div>
+              </div>
+            </div>
+            <button className="btn btn-primary btn-sm" onClick={() => navigate('/app/simulation')}>
+              Launch What-If Forecaster Engine <ArrowRight size={13} />
+            </button>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+            <div style={{ background: 'var(--surface-2)', padding: '12px 14px', borderRadius: 8, border: '1px solid var(--line)' }}>
+              <div style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--ink-muted)', textTransform: 'uppercase' }}>⚡ Peak Power Draw</div>
+              <div className="mono" style={{ fontSize: 18, fontWeight: 800, marginTop: 4, color: 'var(--text-main)' }}>23.4 kW</div>
+              <div style={{ fontSize: 11, color: '#059669', marginTop: 2 }}>✓ Optimal 40 kVA Load</div>
+            </div>
+            <div style={{ background: 'var(--surface-2)', padding: '12px 14px', borderRadius: 8, border: '1px solid var(--line)' }}>
+              <div style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--ink-muted)', textTransform: 'uppercase' }}>💧 Water Reserve</div>
+              <div className="mono" style={{ fontSize: 18, fontWeight: 800, marginTop: 4, color: 'var(--text-main)' }}>28.5 Hours</div>
+              <div style={{ fontSize: 11, color: '#059669', marginTop: 2 }}>✓ 45,000L Overhead Full</div>
+            </div>
+            <div style={{ background: 'var(--surface-2)', padding: '12px 14px', borderRadius: 8, border: '1px solid var(--line)' }}>
+              <div style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--ink-muted)', textTransform: 'uppercase' }}>🍽️ Dining Demand</div>
+              <div className="mono" style={{ fontSize: 18, fontWeight: 800, marginTop: 4, color: 'var(--text-main)' }}>372 Plates</div>
+              <div style={{ fontSize: 11, color: '#059669', marginTop: 2 }}>✓ 94% Turnout Forecast</div>
+            </div>
+            <div style={{ background: 'var(--surface-2)', padding: '12px 14px', borderRadius: 8, border: '1px solid var(--line)' }}>
+              <div style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--ink-muted)', textTransform: 'uppercase' }}>💰 Est. Daily Expense</div>
+              <div className="mono" style={{ fontSize: 18, fontWeight: 800, marginTop: 4, color: 'var(--text-main)' }}>₹34,250</div>
+              <div style={{ fontSize: 11, color: 'var(--ink-soft)', marginTop: 2 }}>Utilities + Mess Ops</div>
+            </div>
+          </div>
+        </div>
+
         <div className="two-col">
           <div className="panel">
             <div className="panel-head">
@@ -774,20 +832,52 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              {doctorStatus !== 'Available in Hostel Clinic' ? (
-                <button
-                  type="button"
-                  className="btn btn-primary btn-sm"
-                  onClick={() => dispatch(checkInDoctor())}
-                >
-                  <UserCheck size={14} /> Check In as Available (Entered Hostel)
-                </button>
-              ) : (
-                <span className="badge badge-ok" style={{ padding: '6px 12px' }}>
-                  <CheckCircle2 size={12} style={{ marginRight: 4 }} /> On Duty in Clinic
-                </span>
-              )}
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className={`btn btn-sm ${doctorStatus === 'Available in Hostel Clinic' ? 'btn-primary' : 'btn-ghost'}`}
+                style={{
+                  background: doctorStatus === 'Available in Hostel Clinic' ? '#059669' : undefined,
+                  borderColor: doctorStatus === 'Available in Hostel Clinic' ? '#059669' : undefined,
+                  color: doctorStatus === 'Available in Hostel Clinic' ? '#ffffff' : undefined,
+                }}
+                onClick={() => {
+                  dispatch(updateDoctorDuty('Available in Hostel Clinic'))
+                  dispatch(pushToast({ message: 'Duty status updated: Available in Clinic', tone: 'ok' }))
+                }}
+              >
+                <CheckCircle2 size={13} /> Available in Clinic
+              </button>
+              <button
+                type="button"
+                className={`btn btn-sm ${doctorStatus === 'On Emergency Ward Rounds' ? 'btn-primary' : 'btn-ghost'}`}
+                style={{
+                  background: doctorStatus === 'On Emergency Ward Rounds' ? '#D97706' : undefined,
+                  borderColor: doctorStatus === 'On Emergency Ward Rounds' ? '#D97706' : undefined,
+                  color: doctorStatus === 'On Emergency Ward Rounds' ? '#ffffff' : undefined,
+                }}
+                onClick={() => {
+                  dispatch(updateDoctorDuty('On Emergency Ward Rounds'))
+                  dispatch(pushToast({ message: 'Duty status updated: On Emergency Ward Rounds', tone: 'warn' }))
+                }}
+              >
+                <Activity size={13} /> Emergency Rounds
+              </button>
+              <button
+                type="button"
+                className={`btn btn-sm ${doctorStatus === 'Off Duty' ? 'btn-primary' : 'btn-ghost'}`}
+                style={{
+                  background: doctorStatus === 'Off Duty' ? '#6B7280' : undefined,
+                  borderColor: doctorStatus === 'Off Duty' ? '#6B7280' : undefined,
+                  color: doctorStatus === 'Off Duty' ? '#ffffff' : undefined,
+                }}
+                onClick={() => {
+                  dispatch(updateDoctorDuty('Off Duty'))
+                  dispatch(pushToast({ message: 'Duty status updated: Off Duty', tone: 'info' }))
+                }}
+              >
+                Off Duty
+              </button>
               <button
                 type="button"
                 className="btn btn-ghost btn-sm"

@@ -5,28 +5,34 @@ const { authorize } = require('../middleware/roleMiddleware');
 
 // In-memory / database synced state for clinic operations
 let clinicState = {
-  doctorStatus: 'Available', // 'Available' | 'In Consultation' | 'On Break' | 'Off Duty'
-  lastCheckIn: new Date().toISOString(),
+  doctorStatus: 'Available in Hostel Clinic', // 'Available in Hostel Clinic' | 'On Emergency Ward Rounds' | 'Off Duty'
+  lastCheckIn: `Today at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`,
   doctorName: 'Dr. Madhu',
   specialization: 'Campus Health & Medical Officer',
   waitingQueue: [
     {
-      id: 'wq-101',
-      studentName: '24104030 (Keerthana)',
+      id: 'OPD-101',
+      token: '#OPD-101',
+      studentName: 'Keerthana G.',
       rollNo: '24104030',
       roomNumber: 'B-37',
-      symptoms: 'Mild tension headache, fatigue',
+      department: 'B.E. CSE - III Year',
+      symptoms: 'Acute frontal throbbing migraine headache, eye strain & mild nausea',
       priority: 'Normal',
-      joinedAt: new Date(Date.now() - 25 * 60000).toISOString(),
+      arrivedAt: '10 mins ago',
+      status: 'Waiting',
     },
     {
-      id: 'wq-102',
-      studentName: '24104404 (P.Sri Rooba)',
+      id: 'OPD-102',
+      token: '#OPD-102',
+      studentName: 'P.Sri Rooba',
       rollNo: '24104404',
       roomNumber: 'B-38',
-      symptoms: 'Seasonal allergic rhinitis & sneezing',
-      priority: 'Normal',
-      joinedAt: new Date(Date.now() - 12 * 60000).toISOString(),
+      department: 'B.E. CSE - II Year',
+      symptoms: 'Left ankle twist sustained during evening sports; localized swelling',
+      priority: 'Urgent',
+      arrivedAt: '18 mins ago',
+      status: 'Waiting',
     },
   ],
   completedConsultations: [],
@@ -41,17 +47,23 @@ router.get('/status', protect, (req, res) => {
     doctorName: clinicState.doctorName,
     specialization: clinicState.specialization,
     waitingCount: clinicState.waitingQueue.length,
+    waitingQueue: clinicState.waitingQueue,
   });
 });
 
 // POST /api/clinic/status - Doctor / Warden / Admin can update clinic shift & availability
 router.post('/status', protect, authorize('doctor', 'warden', 'admin'), (req, res) => {
   const { status, action } = req.body;
-  if (action === 'check-in') {
-    clinicState.doctorStatus = 'Available';
-    clinicState.lastCheckIn = new Date().toISOString();
+  const timeStr = `Today at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`;
+
+  if (action === 'check-in' || status === 'Available in Hostel Clinic' || status === 'Available') {
+    clinicState.doctorStatus = 'Available in Hostel Clinic';
+    clinicState.lastCheckIn = timeStr;
   } else if (status) {
     clinicState.doctorStatus = status;
+    if (status.includes('Available')) {
+      clinicState.lastCheckIn = timeStr;
+    }
   }
   res.status(200).json({
     success: true,

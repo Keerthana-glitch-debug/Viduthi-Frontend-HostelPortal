@@ -7,6 +7,7 @@ import {
   Thermometer, Waves, Info, Compass, ChevronRight
 } from 'lucide-react'
 import { pushToast } from '../store/slices/uiSlice'
+import { api } from '../api/client'
 
 const SCENARIO_PRESETS = [
   {
@@ -131,9 +132,29 @@ export default function SimulationEngine() {
     }
   }, [residents, ambientTemp, examStressIndex, waterSupplyInflow, mealDemandFactor, coolingActiveRatio])
 
-  const handlePredictNeeds = () => {
+  const handlePredictNeeds = async () => {
     setIsPredicting(true)
-    setTimeout(() => {
+    try {
+      await api.post('/simulation/forecast', {
+        totalCapacity: 430,
+        occupancyPercent: Math.round((residents / 430) * 100),
+        scenarioKey:
+          activePreset === 'exams'
+            ? 'EXAM_PREP'
+            : activePreset === 'heatwave'
+            ? 'SUMMER_HEATWAVE'
+            : activePreset === 'vacation'
+            ? 'FESTIVAL_EXODUS'
+            : 'EXAM_PREP',
+        customPowerCutHours: 2,
+        reservoirCapacityLiters: 45000,
+        currentReservoirLiters: waterSupplyInflow,
+        dieselPricePerLiter: 94,
+        foodCostPerMeal: 55,
+      })
+    } catch (err) {
+      console.warn('[Simulation] Backend sync fallback to local calculation:', err)
+    } finally {
       setIsPredicting(false)
       dispatch(
         pushToast({
@@ -141,7 +162,7 @@ export default function SimulationEngine() {
           tone: 'ok',
         })
       )
-    }, 300)
+    }
   }
 
   const handleResetDefaults = () => {

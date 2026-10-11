@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import {
   Stethoscope, UserCheck, Clock, AlertCircle, Plus, CheckCircle2,
@@ -15,6 +15,8 @@ import {
   addWaitingStudent,
   removeWaitingStudent,
   completeConsultation,
+  fetchClinicStatus,
+  updateDoctorDuty,
 } from '../store/slices/clinicSlice'
 import { selectAuth, selectUser } from '../store/slices/authSlice'
 import { pushToast } from '../store/slices/uiSlice'
@@ -80,14 +82,19 @@ export default function ClinicConsultation() {
     priority: 'Normal',
   })
 
+  // Sync clinic status with backend on mount
+  useEffect(() => {
+    dispatch(fetchClinicStatus())
+  }, [dispatch])
+
   // Status Handlers
   const handleCheckInAsAvailable = () => {
-    dispatch(checkInDoctor())
+    dispatch(updateDoctorDuty('Available in Hostel Clinic'))
     dispatch(pushToast({ message: 'Checked In: Doctor is now marked Available in Hostel Clinic!', tone: 'ok' }))
   }
 
   const handleStatusChange = (newStatus) => {
-    dispatch(setDoctorStatus(newStatus))
+    dispatch(updateDoctorDuty(newStatus))
     dispatch(pushToast({ message: `Clinic status updated to: ${newStatus}`, tone: 'info' }))
   }
 
@@ -302,7 +309,7 @@ export default function ClinicConsultation() {
         {/* Action Controls: Doctor can change status, others see read-only badge */}
         <div className="duty-controls">
           <span style={{ fontSize: '0.8rem', color: 'var(--ink-soft)', fontWeight: 600 }}>Doctor Status:</span>
-          {role === 'doctor' ? (
+          {(role === 'doctor' || role === 'warden' || role === 'admin') ? (
             <>
               <button
                 type="button"
